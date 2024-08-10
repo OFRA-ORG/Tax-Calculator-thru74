@@ -502,6 +502,11 @@ class TaxBrain:
     def _stacked_run(
         self, varlist, base_calc, policy, records, client, num_workers
     ):
+        """
+        Run a stacked analysis
+        """
+        if "s006" not in varlist:  # ensure weight is always included
+            varlist.append("s006")
         revenue_output = {}
         BW_len = self.end_year - self.start_year + 1
         # run the base calc first to get baseline results
@@ -534,6 +539,7 @@ class TaxBrain:
             if self.verbose:
                 print("Analyzing ", k)
             revenue_output[k] = np.zeros(BW_len)
+            base_calc_copy, _ = self._make_calculators()
             ref = policy.read_json_reform(v)
             # update Policy object with additional provisions
             policy.implement_reform(ref)
@@ -541,6 +547,7 @@ class TaxBrain:
             calc = tc.calculator.Calculator(policy=policy, records=records)
             # loop over each year in budget window
             for yr in np.arange(self.start_year, self.end_year + 1):
+                base_calc_copy.advance_to_year(yr)
                 calc.advance_to_year(yr)
                 # change income in accordance with corp income tax
                 # distributed across individual taxpayers
@@ -553,11 +560,11 @@ class TaxBrain:
                         self.ci_params,
                     )
                 # makes calculations on microdata
-                calc.calc_all()
-                # compute total revenue
-                revenue_output[k][yr - self.start_year] = calc.weighted_total(
-                    "combined"
+                _, reform = behresp.response(
+                    base_calc_copy, calc, self.params["behavior"], dump=True
                 )
+                # compute total revenue
+                revenue_output[k][yr - self.start_year] = (reform["s006"]* reform['combined']).sum()
                 # if we're on the last reform piece, save the data
                 if k == reform_list[-1]:
                     self.reform_data[yr] = calc.dataframe(varlist)
