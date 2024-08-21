@@ -36,6 +36,7 @@ class TaxBrain:
         end_year: int = LAST_BUDGET_YEAR,
         microdata: Union[str, dict] = "CPS",
         reform: Union[str, dict] = None,
+        reform_growfactors: str = None,
         behavior: dict = None,
         assump=None,
         base_policy: Union[str, dict] = None,
@@ -121,6 +122,7 @@ class TaxBrain:
         self.end_year = end_year
         self.base_data = {yr: {} for yr in range(start_year, end_year + 1)}
         self.reform_data = {yr: {} for yr in range(start_year, end_year + 1)}
+        self.reform_growfactors = reform_growfactors
         self.corp_revenue = corp_revenue
         self.ci_params = corp_incidence_assumptions
         self.verbose = verbose
@@ -734,7 +736,7 @@ class TaxBrain:
 
         # Reform calculator
         gd_reform = tc.GrowDiff()
-        gf_reform = tc.GrowFactors()
+        gf_reform = tc.GrowFactors(self.reform_growfactors)
         # apply user specified growdiff
         if self.params["growdiff_response"]:
             gd_reform.update_growdiff(self.params["growdiff_response"])
@@ -854,7 +856,7 @@ class TaxBrain:
 
         # Reform calculator
         gd_reform = tc.GrowDiff()
-        gf_reform = tc.GrowFactors()
+        gf_reform = tc.GrowFactors(self.reform_growfactors)
         # apply user specified growdiff
         if self.params["growdiff_response"]:
             gd_reform.update_growdiff(self.params["growdiff_response"])
