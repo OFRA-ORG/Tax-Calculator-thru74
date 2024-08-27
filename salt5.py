@@ -24,7 +24,13 @@ start_time = time.time()
 
 outputs = []
 for single_amount in tqdm(range(0, 10001, 50)):
-    output = calc_rev_diff(single_amount, sub, cg)
+    diff = calc_rev_diff(single_amount, sub, cg)
+    output = {
+        'single_amount': single_amount,
+        'sub': sub,
+        'cg': cg,
+        'diff': diff
+    }
     outputs.append(output)
 df_outputs = pd.DataFrame(outputs)
 df_outputs.to_pickle('salt5.pkl')
