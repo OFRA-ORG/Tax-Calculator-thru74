@@ -16,7 +16,10 @@ read-the-docs/_build/
 # IRS-SOI PUF data file
 puf.csv
 tmd.csv
+tmd.csv.gz
 tmd_2021.csv
+tmd_growfactors.csv
+tmd_weights.csv.gz
 
 # Jupyter notebook checkpoints
 *.ipynb_checkpoints*
