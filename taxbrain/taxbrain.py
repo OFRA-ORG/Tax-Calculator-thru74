@@ -699,8 +699,9 @@ class TaxBrain:
             )
         elif self.microdata == "TMD":
             records = tc.Records.tmd_constructor(
-                "tmd.csv",
-                gfactors=gf_base,
+                data_path="./taxcalc/tmd.csv",
+                weights_path="./taxcalc/tmd_weights.csv.gz",
+                growfactors_path="./taxcalc/tmd_growfactors.csv",
             )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
@@ -750,8 +751,9 @@ class TaxBrain:
             )
         elif self.microdata == "TMD":
             records = tc.Records.tmd_constructor(
-                "tmd.csv",
-                gfactors=gf_reform,
+                data_path="./taxcalc/tmd.csv",
+                weights_path="./taxcalc/tmd_weights.csv.gz",
+                growfactors_path="./taxcalc/tmd_growfactors.csv",
             )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
@@ -813,14 +815,15 @@ class TaxBrain:
             records = tc.Records.cps_constructor(data=None, gfactors=gf_base)
         elif self.microdata == "PUF":
             records = tc.Records(
-                "puf.csv",
+                data=pd.read_csv("puf.csv"),
+                weights=str(tc.Records.PUF_WEIGHTS_FILENAME),
                 gfactors=gf_base,
-                weights=tc.Records.PUF_WEIGHTS_FILENAME,
             )
         elif self.microdata == "TMD":
             records = tc.Records.tmd_constructor(
-                "tmd.csv",
-                gfactors=gf_base,
+                data_path="./taxcalc/tmd.csv",
+                weights_path="./taxcalc/tmd_weights.csv.gz",
+                growfactors_path="./taxcalc/tmd_growfactors.csv",
             )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
@@ -873,8 +876,9 @@ class TaxBrain:
             )
         elif self.microdata == "TMD":
             records = tc.Records.tmd_constructor(
-                "tmd.csv",
-                gfactors=gf_reform,
+                data_path="./taxcalc/tmd.csv",
+                weights_path="./taxcalc/tmd_weights.csv.gz",
+                growfactors_path="./taxcalc/tmd_growfactors.csv",
             )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
