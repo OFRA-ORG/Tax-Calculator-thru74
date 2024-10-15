@@ -180,7 +180,8 @@ class TaxBrain:
                 self._static_run(
                     varlist, base_calc, reform_calc, client, num_workers
                 )
-            del base_calc, reform_calc
+
+            # del base_calc, reform_calc
 
         setattr(self, "has_run", True)
 
@@ -393,6 +394,10 @@ class TaxBrain:
                 )
         calc.calc_all()
         df = calc.dataframe(varlist)
+        if reform:
+            self.reform_calc = calc
+        else:
+            self.base_calc = calc
 
         return df
 
@@ -422,6 +427,8 @@ class TaxBrain:
         )
         base_df = base[varlist]
         reform_df = reform[varlist]
+        self.base_calc = base
+        self.reform_calc = reform
 
         return [base_df, reform_df]
 
@@ -734,6 +741,7 @@ class TaxBrain:
         base_calc = tc.Calculator(
             policy=policy, records=records, verbose=self.verbose
         )
+        self.base_records = records
 
         # Reform calculator
         gd_reform = tc.GrowDiff()
@@ -789,6 +797,8 @@ class TaxBrain:
         reform_calc = tc.Calculator(
             policy=policy, records=records, verbose=self.verbose
         )
+        self.reform_records = records
+
         # delete all unneeded variables
         del gd_base, gd_reform, records, gf_base, gf_reform, policy
         return base_calc, reform_calc
