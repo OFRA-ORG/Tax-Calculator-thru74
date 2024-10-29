@@ -35,6 +35,8 @@ class TaxBrain:
         start_year: int,
         end_year: int = LAST_BUDGET_YEAR,
         microdata: Union[str, dict] = "CPS",
+        subnational=False,
+        locale: str = None,
         reform: Union[str, dict] = None,
         reform_growfactors: str = None,
         behavior: dict = None,
@@ -118,6 +120,8 @@ class TaxBrain:
                 len(corp_revenue) == end_year - start_year + 1
             ), f"Corporate revenue is not given for each budget year"
         self.microdata = microdata
+        self.subnational = subnational
+        self.locale = locale
         self.start_year = start_year
         self.end_year = end_year
         self.base_data = {yr: {} for yr in range(start_year, end_year + 1)}
@@ -705,11 +709,18 @@ class TaxBrain:
                 weights=tc.Records.PUF_WEIGHTS_FILENAME,
             )
         elif self.microdata == "TMD":
-            records = tc.Records.tmd_constructor(
-                data_path="./taxcalc/tmd.csv",
-                weights_path="./taxcalc/tmd_weights.csv.gz",
-                growfactors_path="./taxcalc/tmd_growfactors.csv",
-            )
+            if not self.subnational:
+                records = tc.Records.tmd_constructor(
+                    data_path="./taxcalc/tmd.csv",
+                    weights_path="./taxcalc/tmd_weights.csv.gz",
+                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                )
+            else:
+                records = tc.Records.tmd_constructor(
+                    data_path="./taxcalc/tmd.csv",
+                    weights_path="./subnational/"+self.locale+"_tmd_weights.csv.gz",
+                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
                 gd_base = tc.GrowDiff()
@@ -758,11 +769,18 @@ class TaxBrain:
                 weights=tc.Records.PUF_WEIGHTS_FILENAME,
             )
         elif self.microdata == "TMD":
-            records = tc.Records.tmd_constructor(
-                data_path="./taxcalc/tmd.csv",
-                weights_path="./taxcalc/tmd_weights.csv.gz",
-                growfactors_path="./taxcalc/tmd_growfactors.csv",
-            )
+            if not self.subnational:
+                records = tc.Records.tmd_constructor(
+                    data_path="./taxcalc/tmd.csv",
+                    weights_path="./taxcalc/tmd_weights.csv.gz",
+                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                )
+            else:
+                records = tc.Records.tmd_constructor(
+                    data_path="./taxcalc/tmd.csv",
+                    weights_path="./subnational/"+self.locale+"_tmd_weights.csv.gz",
+                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
                 gd_reform = tc.GrowDiff()
