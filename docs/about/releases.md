@@ -4,6 +4,44 @@ Go [here](https://github.com/PSLmodels/Tax-Calculator/pulls?q=is%3Apr+is%3Aclose
 for a complete commit history.
 
 
+2024-11-08 Release 4.3.2
+------------------------
+(last merged pull request is
+[#2834](https://github.com/PSLmodels/Tax-Calculator/pull/2834))
+
+**This is a bug-fix release.**
+
+**API Changes**
+
+**New Features**
+- Add Policy.tmd_constructor() static method for convenience when using Python API
+[[#2834](https://github.com/PSLmodels/Tax-Calculator/pull/2834) by Martin Holmer]
+
+**Bug Fixes**
+- Fix handling of tmd_growfactors.csv file
+[[#2832](https://github.com/PSLmodels/Tax-Calculator/pull/2832) by Martin Holmer]
+- Fix `tc` reform documentation output
+[[#2833](https://github.com/PSLmodels/Tax-Calculator/pull/2833) by Martin Holmer]
+
+
+2024-10-28 Release 4.3.1
+------------------------
+(last merged pull request is
+[#2828](https://github.com/PSLmodels/Tax-Calculator/pull/2828))
+
+**This is a minor enhancement release.**
+
+**API Changes**
+
+**New Features**
+- Remove PT_qbid_limit_switch parameter and it's assocated False code
+[[#2823](https://github.com/PSLmodels/Tax-Calculator/pull/2823) by Martin Holmer]
+- Add checking of Python version to the CLI tool, tc
+[[#2827](https://github.com/PSLmodels/Tax-Calculator/pull/2827) by Martin Holmer]
+- Add weights_scale attribute to the Records and Data classes
+[[#2828](https://github.com/PSLmodels/Tax-Calculator/pull/2828) by Martin Holmer]
+
+
 2024-10-02 Release 4.3.0
 ------------------------
 (last merged pull request is
