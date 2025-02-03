@@ -136,6 +136,7 @@ class Records(Data):
                  adjust_ratios=PUF_RATIOS_FILENAME,
                  exact_calculations=False,
                  weights_scale=0.01):
+        # pylint: disable=too-many-positional-arguments
         # pylint: disable=no-member,too-many-branches
         if isinstance(weights, str):
             weights = os.path.join(Records.CODE_PATH, weights)
@@ -235,7 +236,7 @@ class Records(Data):
     def tmd_constructor(
             data_path: Path,
             weights_path: Path,
-            growfactors_path: Path,
+            growfactors: Path | GrowFactors,
             exact_calculations=False,
     ):  # pragma: no cover
         """
@@ -248,14 +249,17 @@ class Records(Data):
         eliminate the need to specify all the details of the PUF input
         data.
         """
-        # assert isinstance(data_path, Path)
-        # assert isinstance(weights_path, Path)
-        # assert isinstance(growfactors_path, Path)
+        assert isinstance(data_path, Path)
+        assert isinstance(weights_path, Path)
+        if isinstance(growfactors, Path):
+            growfactors = GrowFactors(growfactors_filename=str(growfactors))
+        else:
+            assert isinstance(growfactors, GrowFactors)
         return Records(
             data=pd.read_csv(data_path),
             start_year=Records.TMDCSV_YEAR,
             weights=pd.read_csv(weights_path),
-            gfactors=GrowFactors(growfactors_filename=str(growfactors_path)),
+            gfactors=growfactors,
             adjust_ratios=None,
             exact_calculations=exact_calculations,
             weights_scale=1.0,

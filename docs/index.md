@@ -57,7 +57,7 @@ The cross-model validation work with NBER's TAXSIM-27 model is described
 
 ## Latest release
 
-{doc}`4.3.2 (2024-11-08) <about/releases>`
+{doc}`4.4.0 (2024-12-19) <about/releases>`
 
 If you are already using Tax-Calculator, upgrade using the following command:
 
@@ -68,7 +68,7 @@ conda update conda-forge::taxcalc
 or
 
 ```
-pip install -U taxcalc
+pip install --upgrade taxcalc
 ```
 
 If you're a new user, read {doc}`usage/starting`.

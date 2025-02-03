@@ -4,6 +4,81 @@ Go [here](https://github.com/PSLmodels/Tax-Calculator/pulls?q=is%3Apr+is%3Aclose
 for a complete commit history.
 
 
+2024-12-19 Release 4.4.0
+------------------------
+(last merged pull request is
+[#2856](https://github.com/PSLmodels/Tax-Calculator/pull/2856))
+
+**This is an enhancement release.**
+
+**API Changes**
+
+**New Features**
+- Make a Policy object's last budget year be flexible
+[[#2856](https://github.com/PSLmodels/Tax-Calculator/pull/2856) by Jason DeBacker with minor assistance from Martin Holmer]
+
+
+2024-12-16 Release 4.3.5
+------------------------
+(last merged pull request is
+[#2854](https://github.com/PSLmodels/Tax-Calculator/pull/2854))
+
+**This is a minor enhancement and bug-fix release.**
+
+**API Changes**
+
+**New Features**
+- Update PUF and CPS input data using CBO June 2024 baseline projection
+[[#2831](https://github.com/PSLmodels/Tax-Calculator/pull/2831) by Bodi Yang]
+- Generalize tmd_constructor in both Records and Policy classes
+[[#2850](https://github.com/PSLmodels/Tax-Calculator/pull/2850) by Martin Holmer]
+- Add changes that should have been included in PR #2831
+[[#2854](https://github.com/PSLmodels/Tax-Calculator/pull/2854) by Martin Holmer]
+
+**Bug Fixes**
+- Fix several broken documentation links
+[[#2847](https://github.com/PSLmodels/Tax-Calculator/pull/2847) by Martin Holmer and
+[#2849](https://github.com/PSLmodels/Tax-Calculator/pull/2849) by Martin Holmer]
+- Remove incorrect use of GrowFactors() in Policy and Parameters classes
+[[#2852](https://github.com/PSLmodels/Tax-Calculator/pull/2852) by Martin Holmer]
+
+
+2024-11-30 Release 4.3.4
+------------------------
+(last merged pull request is
+[#2844](https://github.com/PSLmodels/Tax-Calculator/pull/2844))
+
+**This is a bug-fix release.**
+
+**API Changes**
+
+**New Features**
+
+**Bug Fixes**
+- Fix deprecation warning when using pip to install an editable package
+[[#2840](https://github.com/PSLmodels/Tax-Calculator/pull/2840) by Jason DeBacker]
+- Fix weights precision in output file when using CLI tool with TMD input data
+[[#2841](https://github.com/PSLmodels/Tax-Calculator/pull/2841) by Martin Holmer]
+- Fix categorization of self-employment tax and additional Medicare tax
+[[#2844](https://github.com/PSLmodels/Tax-Calculator/pull/2844) by Martin Holmer]
+
+
+2024-11-14 Release 4.3.3
+------------------------
+(last merged pull request is
+[#2837](https://github.com/PSLmodels/Tax-Calculator/pull/2837))
+
+**This is a minor enhancement release.**
+
+**API Changes**
+
+**New Features**
+- Clarify TCJA-after-2025 documentation
+[[#2836](https://github.com/PSLmodels/Tax-Calculator/pull/2836) by Martin Holmer]
+- Add known values of 2025 policy parameters
+[[#2837](https://github.com/PSLmodels/Tax-Calculator/pull/2837) by Martin Holmer]
+
+
 2024-11-08 Release 4.3.2
 ------------------------
 (last merged pull request is

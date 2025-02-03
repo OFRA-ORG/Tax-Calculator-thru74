@@ -1,7 +1,7 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.2
 Name: taxcalc
-Version: 4.3.2
-Summary: taxcalc
+Version: 4.4.0
+Summary: Tax-Calculator
 Home-page: https://github.com/PSLmodels/Tax-Calculator
 Download-URL: https://github.com/PSLmodels/Tax-Calculator
 License: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
@@ -18,13 +18,19 @@ Classifier: Programming Language :: Python :: 3.12
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: setuptools
-Requires-Dist: numpy
-Requires-Dist: pandas
-Requires-Dist: bokeh
+Requires-Dist: numpy>=1.26
+Requires-Dist: pandas>=2.2
+Requires-Dist: bokeh>=2.4
 Requires-Dist: numba
-Requires-Dist: requests
-Requires-Dist: paramtools>=0.18.3
+Requires-Dist: paramtools>=0.19.0
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: download-url
+Dynamic: home-page
+Dynamic: license
+Dynamic: requires-dist
+Dynamic: summary
 
 | | |
 | --- | --- |
@@ -39,8 +45,14 @@ Tax-Calculator
 Tax-Calculator is an open-source microsimulation model for static
 analysis of USA federal income and payroll taxes.
 
-We are seeking contributors and maintainers. If you are interested in joining the project as a contributor or maintainer,
-open a new [issue](https://github.com/PSLmodels/Tax-Calculator/issues) and ping [@MattHJensen](https://github.com/MattHJensen/) or [@jdebacker](https://github.com/jdebacker/) -- or just jump right in.
+We are seeking contributors and maintainers.  If you are interested in
+joining the project as a contributor or maintainer, open a new
+[issue](https://github.com/PSLmodels/Tax-Calculator/issues) and ping
+[@MattHJensen](https://github.com/MattHJensen/) or
+[@jdebacker](https://github.com/jdebacker/) -- or just jump right in.
+The [contributor
+guide](https://taxcalc.pslmodels.org/contributing/contributor_guide.html)
+explains the workflow involved in contributing model enhancements.
 
 Complete documentation is available
 [here](https://PSLmodels.github.io/Tax-Calculator/).

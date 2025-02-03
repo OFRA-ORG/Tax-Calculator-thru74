@@ -20,7 +20,8 @@ class Consumption(Parameters):
 
     Parameters
     ----------
-    none
+    last_budget_year: integer
+        user-defined last parameter extrapolation year
 
     Returns
     -------
@@ -28,14 +29,13 @@ class Consumption(Parameters):
     """
 
     JSON_START_YEAR = Policy.JSON_START_YEAR
-    DEFAULT_NUM_YEARS = Policy.DEFAULT_NUM_YEARS
     DEFAULTS_FILE_NAME = 'consumption.json'
     DEFAULTS_FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 
-    def __init__(self):
+    def __init__(self, last_budget_year=Policy.LAST_BUDGET_YEAR):
         super().__init__()
-        self.initialize(Consumption.JSON_START_YEAR,
-                        Consumption.DEFAULT_NUM_YEARS)
+        nyrs = Policy.number_of_years(last_budget_year)
+        self.initialize(Consumption.JSON_START_YEAR, nyrs)
 
     @staticmethod
     def read_json_update(obj):
@@ -68,10 +68,10 @@ class Consumption(Parameters):
         parameters are one
         """
         for var in Consumption.RESPONSE_VARS:
-            if getattr(self, 'MPC_{}'.format(var)) > 0.0:
+            if getattr(self, f'MPC_{var}') > 0.0:
                 return True
         for var in Consumption.BENEFIT_VARS:
-            if getattr(self, 'BEN_{}_value'.format(var)) < 1.0:
+            if getattr(self, f'BEN_{var}_value') < 1.0:
                 return True
         return False
 
@@ -84,12 +84,17 @@ class Consumption(Parameters):
             raise ValueError('records is not a Records object')
         for var in Consumption.RESPONSE_VARS:
             records_var = getattr(records, var)
-            mpc_var = getattr(self, 'MPC_{}'.format(var))
+            mpc_var = getattr(self, f'MPC_{var}')
             records_var[:] += mpc_var * income_change
 
     def benval_params(self):
         """
         Returns list of BEN_*_value parameter values
         """
-        return [getattr(self, 'BEN_{}_value'.format(var))
+        return [getattr(self, f'BEN_{var}_value')
                 for var in Consumption.BENEFIT_VARS]
+
+    def set_rates(self):
+        """
+        Consumption class has no parameter indexing rates.
+        """

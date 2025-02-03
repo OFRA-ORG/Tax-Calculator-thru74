@@ -13,7 +13,7 @@ import copy
 import pytest
 import numpy as np
 import pandas as pd
-from taxcalc import Policy, Records, Calculator, Consumption
+from taxcalc import GrowFactors, Policy, Records, Calculator, Consumption
 
 
 def test_make_calculator(cps_subsample):
@@ -38,7 +38,7 @@ def test_make_calculator(cps_subsample):
     with pytest.raises(ValueError):
         Calculator(policy=pol, records=None)
     with pytest.raises(ValueError):
-        Calculator(policy=pol, records=rec, consumption=list())
+        Calculator(policy=pol, records=rec, consumption=[])
 
 
 def test_make_calculator_deepcopy(cps_subsample):
@@ -74,9 +74,9 @@ def test_make_calculator_with_policy_reform(cps_subsample):
     assert calc.current_year == year
     assert calc.policy_param('II_em') == 4000
     assert np.allclose(calc.policy_param('_II_em'),
-                       np.array([4000] * Policy.DEFAULT_NUM_YEARS))
+                       np.array([4000] * pol.num_years))
     exp_STD_Aged = [[1600, 1300, 1300,
-                     1600, 1600]] * Policy.DEFAULT_NUM_YEARS
+                     1600, 1600]] * pol.num_years
     assert np.allclose(calc.policy_param('_STD_Aged'),
                        np.array(exp_STD_Aged))
     assert np.allclose(calc.policy_param('STD_Aged'),
@@ -100,10 +100,9 @@ def test_make_calculator_with_multiyear_reform(cps_subsample):
     # create a Calculator object using this policy-reform
     calc = Calculator(policy=pol, records=rec)
     # check that Policy object embedded in Calculator object is correct
-    assert pol.num_years == Policy.DEFAULT_NUM_YEARS
     assert calc.current_year == year
     assert calc.policy_param('II_em') == 3950
-    exp_II_em = [3900, 3950, 5000] + [6000] * (Policy.DEFAULT_NUM_YEARS - 3)
+    exp_II_em = [3900, 3950, 5000] + [6000] * (pol.num_years - 3)
     assert np.allclose(calc.policy_param('_II_em'),
                        np.array(exp_II_em))
     calc.increment_year()
@@ -523,7 +522,7 @@ def test_read_bad_json_assump_file():
     with pytest.raises(ValueError):
         Calculator.read_json_param_objects(None, 'unknown_file_name')
     with pytest.raises(TypeError):
-        Calculator.read_json_param_objects(None, list())
+        Calculator.read_json_param_objects(None, [])
 
 
 def test_json_doesnt_exist():
@@ -568,7 +567,8 @@ def test_noreform_documentation():
     """
     params = Calculator.read_json_param_objects(reform_json, assump_json)
     assert isinstance(params, dict)
-    actual_doc = Calculator.reform_documentation(params)
+    gfs = GrowFactors()
+    actual_doc = Calculator.reform_documentation(params, gfs)
     expected_doc = (
         'REFORM DOCUMENTATION\n'
         'Baseline Growth-Difference Assumption Values by Year:\n'
@@ -623,12 +623,13 @@ def test_reform_documentation():
     params = Calculator.read_json_param_objects(reform_json, assump_json)
     assert isinstance(params, dict)
     second_reform = {'II_em': {2019: 6500}}
-    doc = Calculator.reform_documentation(params, [second_reform])
+    gfs = GrowFactors()
+    doc = Calculator.reform_documentation(params, gfs, [second_reform])
     assert isinstance(doc, str)
     dump = False  # set to True to print documentation and force test failure
     if dump:
         print(doc)
-        assert 1 == 2
+        assert False, 'ERROR: reform_documentation above'
 
 
 def test_distribution_tables(cps_subsample):
@@ -826,7 +827,7 @@ def test_itemded_component_amounts(year, cvname, hcname, puf_fullsample):
         itmded1 = calc1.weighted_total('c04470') * 1e-9
         itmded2 = calc2.weighted_total('c04470') * 1e-9
     else:
-        raise ValueError('illegal year value = {}'.format(year))
+        raise ValueError(f'illegal year value = {year}')
     difference_in_total_itmded = itmded1 - itmded2
     # calculate itemized component amount
     component_amt = calc1.weighted_total(cvname) * 1e-9
@@ -840,8 +841,11 @@ def test_itemded_component_amounts(year, cvname, hcname, puf_fullsample):
     else:
         atol = 0.00001
     if not np.allclose(component_amt, difference_in_total_itmded, atol=atol):
-        txt = '\n{}={:.3f}  !=  {:.3f}=difference_in_total_itemized_deductions'
-        msg = txt.format(cvname, component_amt, difference_in_total_itmded)
+        msg = (
+            f'\n{cvname}={component_amt:.3f}  !=  '
+            f'{difference_in_total_itmded:.3f}='
+            'difference_in_total_itemized_deductions'
+        )
         raise ValueError(msg)
 
 
@@ -927,6 +931,8 @@ def test_cg_top_rate():
     """
     Test top CG bracket and rate.
     """
+    # pylint: disable=too-many-locals
+
     cy = 2019
 
     # set NIIT and STD to zero to isolate CG tax rates
