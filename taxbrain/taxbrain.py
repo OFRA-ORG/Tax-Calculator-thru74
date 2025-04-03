@@ -15,6 +15,7 @@ from taxbrain.utils import weighted_sum, update_policy
 from taxbrain.corporate_incidence import distribute as dist_corp
 from typing import Union
 from paramtools import ValidationError
+from pathlib import Path
 
 
 class TaxBrain:
@@ -711,15 +712,15 @@ class TaxBrain:
         elif self.microdata == "TMD":
             if not self.subnational:
                 records = tc.Records.tmd_constructor(
-                    data_path="./taxcalc/tmd.csv",
-                    weights_path="./taxcalc/tmd_weights.csv.gz",
-                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                    data_path=Path("./taxcalc/tmd.csv"),
+                    weights_path=Path("./taxcalc/tmd_weights.csv.gz"),
+                    growfactors=Path("./taxcalc/tmd_growfactors.csv"),
                 )
             else:
                 records = tc.Records.tmd_constructor(
-                    data_path="./taxcalc/tmd.csv",
-                    weights_path="./subnational/"+self.locale+"_tmd_weights.csv.gz",
-                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                    data_path=Path("./taxcalc/tmd.csv"),
+                    weights_path=Path("./subnational/cds/"+self.locale+"_tmd_weights.csv.gz"),
+                    growfactors=Path("./taxcalc/tmd_growfactors.csv"),
                 )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
@@ -771,15 +772,15 @@ class TaxBrain:
         elif self.microdata == "TMD":
             if not self.subnational:
                 records = tc.Records.tmd_constructor(
-                    data_path="./taxcalc/tmd.csv",
-                    weights_path="./taxcalc/tmd_weights.csv.gz",
-                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                    data_path=Path("./taxcalc/tmd.csv"),
+                    weights_path=Path("./taxcalc/tmd_weights.csv.gz"),
+                    growfactors=Path("./taxcalc/tmd_growfactors.csv"),
                 )
             else:
                 records = tc.Records.tmd_constructor(
-                    data_path="./taxcalc/tmd.csv",
-                    weights_path="./subnational/"+self.locale+"_tmd_weights.csv.gz",
-                    growfactors_path="./taxcalc/tmd_growfactors.csv",
+                    data_path=Path("./taxcalc/tmd.csv"),
+                    weights_path=Path("./subnational/cds/"+self.locale+"_tmd_weights.csv.gz"),
+                    growfactors=Path("./taxcalc/tmd_growfactors.csv"),
                 )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
@@ -849,9 +850,9 @@ class TaxBrain:
             )
         elif self.microdata == "TMD":
             records = tc.Records.tmd_constructor(
-                data_path="./taxcalc/tmd.csv",
-                weights_path="./taxcalc/tmd_weights.csv.gz",
-                growfactors_path="./taxcalc/tmd_growfactors.csv",
+                data_path=Path("./taxcalc/tmd.csv"),
+                weights_path=Path("./taxcalc/tmd_weights.csv.gz"),
+                growfactors=Path("./taxcalc/tmd_growfactors.csv"),
             )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
@@ -904,9 +905,9 @@ class TaxBrain:
             )
         elif self.microdata == "TMD":
             records = tc.Records.tmd_constructor(
-                data_path="./taxcalc/tmd.csv",
-                weights_path="./taxcalc/tmd_weights.csv.gz",
-                growfactors_path="./taxcalc/tmd_growfactors.csv",
+                data_path=Path("./taxcalc/tmd.csv"),
+                weights_path=Path("./taxcalc/tmd_weights.csv.gz"),
+                growfactors=Path("./taxcalc/tmd_growfactors.csv"),
             )
         elif isinstance(self.microdata, dict):
             if self.microdata["growfactors"] is None:
