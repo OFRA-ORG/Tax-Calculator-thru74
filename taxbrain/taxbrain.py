@@ -191,7 +191,7 @@ class TaxBrain:
         setattr(self, "has_run", True)
 
     def weighted_totals(
-        self, var: str, include_total: bool = False
+        self, var: str, include_total: bool = False, xtot: int = 0
     ) -> pd.DataFrame:
         """
         Create a pandas DataFrame that shows the weighted sum or a specified
@@ -215,13 +215,28 @@ class TaxBrain:
         reform_totals = {}
         differences = {}
         for year in range(self.start_year, self.end_year + 1):
-            base_totals[year] = (
-                self.base_data[year]["s006"] * self.base_data[year][var]
-            ).sum()
-            reform_totals[year] = (
-                self.reform_data[year]["s006"] * self.reform_data[year][var]
-            ).sum()
-            differences[year] = reform_totals[year] - base_totals[year]
+            if xtot == 0:
+                base_totals[year] = (
+                    getattr(self.base_records, 'WT')['WT2026'] * self.base_data[year][var]
+                ).sum()
+                reform_totals[year] = (
+                    getattr(self.reform_records, 'WT')['WT2026'] * self.reform_data[year][var]
+                ).sum()
+                differences[year] = reform_totals[year] - base_totals[year]
+            else:
+                base_data_full = pd.concat([self.base_calc, getattr(self.base_records, 'WT')], axis=1)
+                base_data = base_data_full[base_data_full['XTOT']==xtot]
+                base_totals[year] = (
+                    base_data["WT2026"] * base_data[var]
+                ).sum()
+                reform_data_full = pd.concat([self.reform_calc, getattr(self.reform_records, 'WT')], axis=1)
+                reform_data = reform_data_full[reform_data_full['XTOT']==xtot]                
+                reform_totals[year] = (
+                    reform_data["WT2026"] * reform_data[var]
+                ).sum()
+                differences[year] = reform_totals[year] - base_totals[year]
+
+
         table = pd.DataFrame(
             [base_totals, reform_totals, differences],
             index=["Base", "Reform", "Difference"],
