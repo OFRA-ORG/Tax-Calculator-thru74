@@ -55,11 +55,11 @@
     //  The treatment is not entirely accurate after 2026 because the basic standard deduction is indexed for inflation but the temporarily increases the amount of the basic standard deduction is not.
     "STD_Aged": {
         "2025": [6000, 5600, 5600, 6000, 5600],
-        "2029": [2000, 1600, 1600, 2000, 1600],
+        "2029": [2000, 1600, 1600, 2000, 1600]
     },
     "STD_Aged-indexed": {
         "2025": false,
-        "2029": true,
+        "2029": true
     },
     "ID_AllTaxes_c": {"2026": [30000.0, 30000.0, 15000.0, 30000.0, 30000.0]},
     "ID_Charity_crt_cash": {"2026": 0.60},
