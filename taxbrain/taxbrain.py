@@ -822,7 +822,7 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        policy = tc.Policy(gf_base, last_budget_year=self.end_year)
+        policy = tc.Policy(gf_reform, last_budget_year=self.end_year)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         update_policy(policy, self.params["policy"])
@@ -949,5 +949,5 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        reform_policy = tc.Policy(gf_base, last_budget_year=self.end_year)
+        reform_policy = tc.Policy(gf_reform, last_budget_year=self.end_year)
         return base_calc, reform_policy, records
