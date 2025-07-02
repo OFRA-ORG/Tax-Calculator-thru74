@@ -22,12 +22,7 @@ Requires-Dist: numpy>=1.26
 Requires-Dist: pandas>=2.2
 Requires-Dist: bokeh>=2.4
 Requires-Dist: numba
-<<<<<<< HEAD
 Requires-Dist: paramtools>=0.20.0
-=======
-Requires-Dist: paramtools>=0.19.0
-Requires-Dist: behresp
->>>>>>> 30e0c1ef (Reorganize files and directories)
 Dynamic: classifier
 Dynamic: description
 Dynamic: description-content-type
