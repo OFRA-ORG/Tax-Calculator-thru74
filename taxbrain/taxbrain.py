@@ -654,7 +654,7 @@ class TaxBrain:
             params["policy"] = reform
             # Check stacked reforms
             if self.stacked:
-                pol = tc.Policy()
+                pol = tc.Policy(last_budget_year=self.end_year)
                 full_policy = {}
                 for name, subreform in reform.items():
                     # assume that if the reform is a string it's a JSON reform
@@ -762,7 +762,7 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        policy = tc.Policy(gf_base)
+        policy = tc.Policy(gf_base, last_budget_year=self.end_year)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         base_calc = tc.Calculator(
@@ -822,7 +822,7 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        policy = tc.Policy(gf_reform)
+        policy = tc.Policy(gf_base, last_budget_year=self.end_year)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         update_policy(policy, self.params["policy"])
@@ -894,7 +894,7 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        policy = tc.Policy(gf_base)
+        policy = tc.Policy(gf_base, last_budget_year=self.end_year)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         base_calc = tc.Calculator(
@@ -949,5 +949,5 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        reform_policy = tc.Policy(gf_reform)
+        reform_policy = tc.Policy(gf_base, last_budget_year=self.end_year)
         return base_calc, reform_policy, records
