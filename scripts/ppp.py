@@ -30,13 +30,6 @@ REVERTING_PARAMS = {
     'II_brk5': 2026,
     'II_brk6': 2026,
     'II_brk7': 2026,
-    'PT_brk1': 2026,
-    'PT_brk2': 2026,
-    'PT_brk3': 2026,
-    'PT_brk4': 2026,
-    'PT_brk5': 2026,
-    'PT_brk6': 2026,
-    'PT_brk7': 2026,
     'PT_qbid_taxinc_thd': 2026,
     'AMT_em': 2026,
     'AMT_em_ps': 2026,
@@ -51,7 +44,7 @@ def cumulative_ifactor():
     """
     Return PYEAR-to_FYEAR inflation factor.
     """
-    pol = Policy()
+    pol = Policy(last_budget_year=2035)
     # calculate the inflation factor used to calculate the
     # inflation-adjusted 2026 reverting parameter values
     # NOTE: pvalue[t+1] = pvalue[t] * ( 1 + irate[t] )
@@ -118,7 +111,7 @@ def main():
     # construct policy_current_law.json revert-year fragments
     # for each reverting parameter in a fragments dictionary
     fragments = {}
-    parameters = Policy()
+    parameters = Policy(last_budget_year=2035)
     for pname, ryear in REVERTING_PARAMS.items():
         vos = parameters.select_eq(pname, year=PYEAR)
         frag_list = []

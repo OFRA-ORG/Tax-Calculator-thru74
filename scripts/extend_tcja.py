@@ -23,32 +23,18 @@ TCJA_PARAMETERS = {
     # category 1 ...
     "II_rt1": {"indexed": False, "category": 1},
     "II_brk1": {"indexed": True, "category": 1},
-    "PT_rt1": {"indexed": False, "category": 1},
-    "PT_brk1": {"indexed": True, "category": 1},
     "II_rt2": {"indexed": False, "category": 1},
     "II_brk2": {"indexed": True, "category": 1},
-    "PT_rt2": {"indexed": False, "category": 1},
-    "PT_brk2": {"indexed": True, "category": 1},
     "II_rt3": {"indexed": False, "category": 1},
     "II_brk3": {"indexed": True, "category": 1},
-    "PT_rt3": {"indexed": False, "category": 1},
-    "PT_brk3": {"indexed": True, "category": 1},
     "II_rt4": {"indexed": False, "category": 1},
     "II_brk4": {"indexed": True, "category": 1},
-    "PT_rt4": {"indexed": False, "category": 1},
-    "PT_brk4": {"indexed": True, "category": 1},
     "II_rt5": {"indexed": False, "category": 1},
     "II_brk5": {"indexed": True, "category": 1},
-    "PT_rt5": {"indexed": False, "category": 1},
-    "PT_brk5": {"indexed": True, "category": 1},
     "II_rt6": {"indexed": False, "category": 1},
     "II_brk6": {"indexed": True, "category": 1},
-    "PT_rt6": {"indexed": False, "category": 1},
-    "PT_brk6": {"indexed": True, "category": 1},
     "II_rt7": {"indexed": False, "category": 1},
     "II_brk7": {"indexed": True, "category": 1},
-    "PT_rt7": {"indexed": False, "category": 1},
-    "PT_brk7": {"indexed": True, "category": 1},
     # category 2 ...
     "CTC_c": {"indexed": False, "category": 2},
     "ACTC_c": {"indexed": True, "category": 2},
@@ -93,7 +79,7 @@ def main():
     # identify last parameter name in TCJA_PARAMETERS
     last_pname = list(TCJA_PARAMETERS.keys())[-1]
     # calculate 2025-to-2026 parameters indexing factor
-    pol = taxcalc.Policy()
+    pol = taxcalc.Policy(last_budget_year=2035)
     pirates = pol.inflation_rates()
     ifactor25 = 1.0 + pirates[2025 - taxcalc.Policy.JSON_START_YEAR]
     ifactor28 = 1.0 + pirates[2028 - taxcalc.Policy.JSON_START_YEAR]
