@@ -17,7 +17,7 @@ config = {
     "long_description": longdesc,
     "version": VERSION,
     "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
-    "packages": ["taxcalc", "taxcalc.cli"],
+    "packages": ["taxcalc", "taxcalc.cli", "taxbrain"],
     "include_package_data": True,
     "name": "taxcalc",
     "install_requires": [
