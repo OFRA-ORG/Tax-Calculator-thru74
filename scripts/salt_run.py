@@ -7,7 +7,7 @@
 import time
 from tqdm import tqdm
 import pandas as pd
-from taxcalc.salt_functions import calc_rev_diff, sim_salt
+from salt_functions import calc_rev_diff, sim_salt
 
 
 # In[2]:

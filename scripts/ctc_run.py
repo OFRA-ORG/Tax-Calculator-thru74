@@ -2,7 +2,7 @@ import time
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
-from taxcalc.salt_functions import calc_rev_diff
+from salt_functions import calc_rev_diff
 
 sub = 0.25
 cg = -3.45
