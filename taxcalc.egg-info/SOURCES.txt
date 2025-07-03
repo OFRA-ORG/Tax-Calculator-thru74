@@ -125,7 +125,6 @@ taxcalc/puf_ratios.csv
 taxcalc/puf_weights.csv.gz
 taxcalc/records.py
 taxcalc/records_variables.json
-taxcalc/salt_functions.py
 taxcalc/taxcalcio.py
 taxcalc/utils.py
 taxcalc/utilsprvt.py

@@ -8,7 +8,6 @@ def calc_rev_diff(single_amount, sub, cg, sd_adjust=0, rate_adjust=0, ctc_adjust
             "ID_AllTaxes_c": {"2026":  [single_amount, single_amount, single_amount/2, single_amount, single_amount]},
             "STD": {"2026": [15301.69+sd_adjust, 30603.38+sd_adjust*2, 15301.69+sd_adjust, 22952.54+sd_adjust*1.5, 30603.38+sd_adjust*2]},
             "II_rt1": {"2026": 0.10+rate_adjust},
-            "PT_rt1": {"2026": 0.10+rate_adjust},
             "CTC_c": {"2026": 2000.00+ctc_adjust}
         }
 
@@ -17,7 +16,6 @@ def calc_rev_diff(single_amount, sub, cg, sd_adjust=0, rate_adjust=0, ctc_adjust
             "ID_AllTaxes_c": {"2026":  [single_amount, single_amount*2, single_amount, single_amount, single_amount*2]},
             "STD": {"2026": [15301.69+sd_adjust, 30603.38+sd_adjust*2, 15301.69+sd_adjust, 22952.54+sd_adjust*1.5, 30603.38+sd_adjust*2]},
             "II_rt1": {"2026": 0.10+rate_adjust},
-            "PT_rt1": {"2026": 0.10+rate_adjust},
             "CTC_c": {"2026": 2000.00+ctc_adjust}
         }
         
@@ -35,7 +33,6 @@ def sim_salt(single_amount, sub, cg, sd_adjust=0, rate_adjust=0, ctc_adjust=0, w
             "ID_AllTaxes_c": {"2026":  [single_amount, single_amount, single_amount/2, single_amount, single_amount]},
             "STD": {"2026": [15301.69+sd_adjust, 30603.38+sd_adjust*2, 15301.69+sd_adjust, 22952.54+sd_adjust*1.5, 30603.38+sd_adjust*2]},
             "II_rt1": {"2026": 0.10+rate_adjust},
-            "PT_rt1": {"2026": 0.10+rate_adjust},
             "CTC_c": {"2026": 2000.00+ctc_adjust}
         }
 
@@ -44,7 +41,6 @@ def sim_salt(single_amount, sub, cg, sd_adjust=0, rate_adjust=0, ctc_adjust=0, w
             "ID_AllTaxes_c": {"2026":  [single_amount, single_amount*2, single_amount, single_amount, single_amount*2]},
             "STD": {"2026": [15301.69+sd_adjust, 30603.38+sd_adjust*2, 15301.69+sd_adjust, 22952.54+sd_adjust*1.5, 30603.38+sd_adjust*2]},
             "II_rt1": {"2026": 0.10+rate_adjust},
-            "PT_rt1": {"2026": 0.10+rate_adjust},
             "CTC_c": {"2026": 2000.00+ctc_adjust}
         }
         
