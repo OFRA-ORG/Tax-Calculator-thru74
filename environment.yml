@@ -21,7 +21,9 @@ dependencies:
     - jupyter-book
     - "paramtools>=0.20.0"
 # Taxbrain dependencies
+- aiohttp
 - dask
 - matplotlib
 - pypandoc
+- requests
 - tabulate
