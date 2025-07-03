@@ -702,7 +702,7 @@ class TaxBrain:
             params["policy"] = reform
             # Check stacked reforms
             if self.stacked:
-                pol = tc.Policy(last_budget_year=self.end_year)
+                pol = tc.Policy()
                 full_policy = {}
                 for name, subreform in reform.items():
                     # assume that if the reform is a string it's a JSON reform
@@ -762,7 +762,7 @@ class TaxBrain:
         records, gf_base = self._create_records_and_gfactors(
             tc.GrowFactors(), self.params["growdiff_baseline"]
         )
-        policy = tc.Policy(gf_base, last_budget_year=self.end_year)
+        policy = tc.Policy(gf_base)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         base_calc = tc.Calculator(
@@ -775,7 +775,7 @@ class TaxBrain:
             tc.GrowFactors(self.reform_growfactors),
             self.params["growdiff_response"],
         )
-        policy = tc.Policy(gf_reform, last_budget_year=self.end_year)
+        policy = tc.Policy(gf_reform)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         update_policy(policy, self.params["policy"])
@@ -805,7 +805,7 @@ class TaxBrain:
         records, gf_base = self._create_records_and_gfactors(
             tc.GrowFactors(), self.params["growdiff_baseline"]
         )
-        policy = tc.Policy(gf_base, last_budget_year=self.end_year)
+        policy = tc.Policy(gf_base)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
         base_calc = tc.Calculator(
@@ -817,5 +817,5 @@ class TaxBrain:
             tc.GrowFactors(self.reform_growfactors),
             self.params["growdiff_response"],
         )
-        reform_policy = tc.Policy(gf_reform, last_budget_year=self.end_year)
+        reform_policy = tc.Policy(gf_reform)
         return base_calc, reform_policy, records
