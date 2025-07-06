@@ -166,30 +166,86 @@ class TaxBrain:
         if not isinstance(varlist, list):
             msg = f"'varlist' is of type {type(varlist)}. Must be a list."
             raise TypeError(msg)
+
         if self.stacked:
-            base_calc, _, policy, records = self._get_calculators(stacked=True)
-            self._stacked_run(
-                varlist, base_calc, policy, records, client, num_workers
-            )
-            del base_calc
+            run_type = "stacked"
+        elif self.params["behavior"]:
+            run_type = "dynamic"
         else:
-            base_calc, reform_calc, _, _ = self._get_calculators(stacked=False)
-            if self.params["behavior"]:
-                if self.verbose:
-                    print("Running dynamic simulations")
-                self._dynamic_run(
-                    varlist, base_calc, reform_calc, client, num_workers
+            run_type = "static"
+        if self.verbose:
+            print(f"Running {run_type} simulations for "
+                  f"{self.start_year}-{self.end_year}")
+
+        base_calc, reform_calc, policy, records = self._get_calculators(
+            stacked=self.stacked
+        )
+
+        if "s006" not in varlist:  # ensure weight is always included
+            varlist.append("s006")
+        lazy_values = []
+        for yr in range(self.start_year, self.end_year + 1):
+            if run_type == "dynamic":
+                lazy_values.append(
+                    delayed(
+                        self._behresp_advance(
+                            base_calc, reform_calc, varlist, yr
+                        )
+                    )
+                )
+            elif run_type == "stacked":
+                lazy_values.append(
+                    delayed(self._taxcalc_advance(base_calc, varlist, yr))
+                )
+            elif run_type == "static":
+                lazy_values.extend(
+                    [
+                        delayed(self._taxcalc_advance(base_calc, varlist, yr)),
+                        delayed(
+                            self._taxcalc_advance(
+                                reform_calc, varlist, yr, reform=True
+                            )
+                        ),
+                    ]
                 )
             else:
-                if self.verbose:
-                    print("Running static simulations")
-                self._static_run(
-                    varlist, base_calc, reform_calc, client, num_workers
+                raise ValueError(
+                    f"Unknown run_type '{run_type}'. "
+                    f"Must be one of 'static', 'dynamic', or 'stacked'."
                 )
 
-            # del base_calc, reform_calc
+        if client:
+            futures = client.compute(lazy_values, num_workers=num_workers)
+            results = client.gather(futures)
+        else:
+            results = compute(
+                *lazy_values,
+                scheduler=dask.multiprocessing.get,
+                num_workers=num_workers,
+            )
 
-        setattr(self, "has_run", True)
+        if run_type == "dynamic":
+            # add results to base and reform data
+            for i in range(len(results)):
+                yr = self.start_year + i
+                self.base_data[yr] = results[i][0]
+                self.reform_data[yr] = results[i][1]
+        elif run_type == "static":
+            # add results to base and reform data
+            yr = self.start_year
+            for i in np.arange(0, len(results), 2):
+                self.base_data[yr] = results[i]
+                self.reform_data[yr] = results[i + 1]
+                yr += 1
+        elif run_type == "stacked":
+            self._set_stacked_table(varlist, policy, records, results)
+        else:
+            raise ValueError(
+                f"Unknown run_type '{run_type}'. "
+                f"Must be one of 'static', 'dynamic', or 'stacked'."
+            )
+
+        self.has_run = True
 
     def weighted_totals(
         self, var: str, include_total: bool = False, xtot: int = 0
@@ -339,107 +395,15 @@ class TaxBrain:
 
         return [base_df, reform_df]
 
-    def _static_run(
-        self, varlist, base_calc, reform_calc, client, num_workers
+    def _set_stacked_table(
+        self, varlist, policy, records, results
     ):
         """
-        Run the calculator for a static analysis
+        Compute a stacked table of revenue estimates.
         """
-        if "s006" not in varlist:  # ensure weight is always included
-            varlist.append("s006")
-        lazy_values = []
-        for yr in range(self.start_year, self.end_year + 1):
-            lazy_values.extend(
-                [
-                    delayed(self._taxcalc_advance(base_calc, varlist, yr)),
-                    delayed(
-                        self._taxcalc_advance(
-                            reform_calc, varlist, yr, reform=True
-                        )
-                    ),
-                ]
-            )
-        if client:
-            futures = client.compute(lazy_values, num_workers=num_workers)
-            results = client.gather(futures)
-        else:
-            results = compute(
-                *lazy_values,
-                scheduler=dask.multiprocessing.get,
-                num_workers=num_workers,
-            )
-
-        # add results to base and reform data
-        yr = self.start_year
-        for i in np.arange(0, len(results), 2):
-            self.base_data[yr] = results[i]
-            self.reform_data[yr] = results[i + 1]
-            yr += 1
-
-        del results
-
-    def _dynamic_run(
-        self, varlist, base_calc, reform_calc, client, num_workers
-    ):
-        """
-        Run a dynamic response
-        """
-        if "s006" not in varlist:  # ensure weight is always included
-            varlist.append("s006")
-        lazy_values = []
-        for yr in range(self.start_year, self.end_year + 1):
-            lazy_values.extend(
-                [
-                    delayed(
-                        self._behresp_advance(
-                            base_calc, reform_calc, varlist, yr
-                        )
-                    )
-                ]
-            )
-        if client:
-            futures = client.compute(lazy_values, num_workers=num_workers)
-            results = client.gather(futures)
-        else:
-            results = results = compute(
-                *lazy_values,
-                scheduler=dask.multiprocessing.get,
-                num_workers=num_workers,
-            )
-
-        # add results to base and reform data
-        for i in range(len(results)):
-            yr = self.start_year + i
-            self.base_data[yr] = results[i][0]
-            self.reform_data[yr] = results[i][1]
-
-        del results
-
-    def _stacked_run(
-        self, varlist, base_calc, policy, records, client, num_workers
-    ):
-        """
-        Run a stacked analysis
-        """
-        if "s006" not in varlist:  # ensure weight is always included
-            varlist.append("s006")
         revenue_output = {}
         BW_len = self.end_year - self.start_year + 1
-        # run the base calc first to get baseline results
-        lazy_values = []
-        for yr in range(self.start_year, self.end_year + 1):
-            lazy_values.append(
-                delayed(self._taxcalc_advance(base_calc, varlist, yr))
-            )
-        if client:
-            futures = client.compute(lazy_values, num_workers=num_workers)
-            results = client.gather(futures)
-        else:
-            results = results = compute(
-                *lazy_values,
-                scheduler=dask.multiprocessing.get,
-                num_workers=num_workers,
-            )
+
         # add results to data and revenue outputs
         revenue_output["Baseline"] = np.zeros(BW_len)
         yr = self.start_year
@@ -503,7 +467,7 @@ class TaxBrain:
         rev_est_tbl.loc["Total"] = rev_est_tbl.sum()
 
         # save the table as an attribute of the TaxBrain object
-        setattr(self, "stacked_table", rev_est_tbl)
+        self.stacked_table = rev_est_tbl
 
     def _process_user_mods(self, reform, assump):
         """
@@ -559,7 +523,7 @@ class TaxBrain:
                         raise e
                     # update the full policy to save later
                     full_policy = {**full_policy, **pol_params}
-                setattr(self, "stacked_reforms", reform)
+                self.stacked_reforms = reform
                 params["policy"] = full_policy
         elif isinstance(reform, str) or not reform:
             if isinstance(assump, str) or not assump:
