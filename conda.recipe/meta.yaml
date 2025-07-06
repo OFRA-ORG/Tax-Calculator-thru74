@@ -28,6 +28,12 @@ requirements:
     - curl
     - openpyxl
     - behresp
+    - aiohttp
+    - dask
+    - matplotlib
+    - pypandoc
+    - requests
+    - tabulate
 
 test:
   commands:

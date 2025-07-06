@@ -16,7 +16,6 @@ from taxbrain.corporate_incidence import distribute as dist_corp
 from typing import Union
 from paramtools import ValidationError
 from pathlib import Path
-from taxbrain.simulations import taxcalc_advance, behresp_advance
 from taxbrain.tables import weighted_totals, multi_var_table, distribution_table, differences_table
 
 
@@ -290,7 +289,7 @@ class TaxBrain:
         lazy_values = []
         for yr in range(self.start_year, self.end_year + 1):
             lazy_values.append(
-                delayed(taxcalc_advance(base_calc, varlist, yr, self.corp_revenue, self.start_year, self.ci_params))
+                delayed(self._taxcalc_advance(base_calc, varlist, yr))
             )
         if client:
             futures = client.compute(lazy_values, num_workers=num_workers)
@@ -367,6 +366,69 @@ class TaxBrain:
         setattr(self, "stacked_table", rev_est_tbl)
 
     # ----- private methods -----
+    def _taxcalc_advance(self, calc, varlist, year, reform=False):
+        """
+        This function advances the year used in Tax-Calculator, computes
+        tax liability and rates, and saves the results to a dictionary.
+        Args:
+            calc (Tax-Calculator Calculator object): TC calculator
+            varlist (list): variables to return
+            year (int): year to begin advancing from
+            reform (bool): whether Calculator object is for the reform policy
+
+        Returns:
+            tax_dict (dict): a dictionary of microdata with marginal tax
+                rates and other information computed in TC
+        """
+        calc.advance_to_year(year)
+        if self.corp_revenue is not None:
+            if reform:
+                calc = dist_corp(
+                    calc,
+                    self.corp_revenue,
+                    year,
+                    self.start_year,
+                    self.ci_params,
+                )
+        calc.calc_all()
+        df = calc.dataframe(varlist)
+        if reform:
+            self.reform_calc = calc
+        else:
+            self.base_calc = calc
+
+        return df
+
+    def _behresp_advance(self, base_calc, reform_calc, varlist, year):
+        """
+        This function advances the year used in the Behavioral Responses
+        model and saves the results to a dictionary.
+        Args:
+            calc1 (Tax-Calculator Calculator object): TC calculator
+            year (int): year to begin advancing from
+        Returns:
+            tax_dict (dict): a dictionary of microdata with marginal tax
+                rates and other information computed in TC
+        """
+        base_calc.advance_to_year(year)
+        reform_calc.advance_to_year(year)
+        if self.corp_revenue is not None:
+            reform_calc = dist_corp(
+                reform_calc,
+                self.corp_revenue,
+                year,
+                self.start_year,
+                self.ci_params,
+            )
+        base, reform = behresp.response(
+            base_calc, reform_calc, self.params["behavior"], dump=True
+        )
+        base_df = base[varlist]
+        reform_df = reform[varlist]
+        self.base_calc = base
+        self.reform_calc = reform
+
+        return [base_df, reform_df]
 
     def _static_run(
         self, varlist, base_calc, reform_calc, client, num_workers
@@ -380,10 +442,10 @@ class TaxBrain:
         for yr in range(self.start_year, self.end_year + 1):
             lazy_values.extend(
                 [
-                    delayed(taxcalc_advance(base_calc, varlist, yr, self.corp_revenue, self.start_year, self.ci_params)),
+                    delayed(self._taxcalc_advance(base_calc, varlist, yr)),
                     delayed(
-                        taxcalc_advance(
-                            reform_calc, varlist, yr, self.corp_revenue, self.start_year, self.ci_params, reform=True
+                        self._taxcalc_advance(
+                            reform_calc, varlist, yr, reform=True
                         )
                     ),
                 ]
@@ -420,8 +482,8 @@ class TaxBrain:
             lazy_values.extend(
                 [
                     delayed(
-                        behresp_advance(
-                            base_calc, reform_calc, varlist, yr, self.corp_revenue, self.start_year, self.ci_params, self.params["behavior"]
+                        self._behresp_advance(
+                            base_calc, reform_calc, varlist, yr
                         )
                     )
                 ]
@@ -458,7 +520,7 @@ class TaxBrain:
         lazy_values = []
         for yr in range(self.start_year, self.end_year + 1):
             lazy_values.append(
-                delayed(taxcalc_advance(base_calc, varlist, yr, self.corp_revenue, self.start_year, self.ci_params))
+                delayed(self._taxcalc_advance(base_calc, varlist, yr))
             )
         if client:
             futures = client.compute(lazy_values, num_workers=num_workers)
