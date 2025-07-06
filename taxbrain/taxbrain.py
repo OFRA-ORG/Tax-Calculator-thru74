@@ -167,13 +167,13 @@ class TaxBrain:
             msg = f"'varlist' is of type {type(varlist)}. Must be a list."
             raise TypeError(msg)
         if self.stacked:
-            base_calc, policy, records = self._make_stacked_objects()
+            base_calc, _, policy, records = self._get_calculators(stacked=True)
             self._stacked_run(
                 varlist, base_calc, policy, records, client, num_workers
             )
             del base_calc
         else:
-            base_calc, reform_calc = self._make_calculators()
+            base_calc, reform_calc, _, _ = self._get_calculators(stacked=False)
             if self.params["behavior"]:
                 if self.verbose:
                     print("Running dynamic simulations")
@@ -275,97 +275,6 @@ class TaxBrain:
             )
         return records, gfactors
 
-    def _stacked_run(
-        self, varlist, base_calc, policy, records, client, num_workers
-    ):
-        """
-        Run a stacked analysis
-        """
-        if "s006" not in varlist:  # ensure weight is always included
-            varlist.append("s006")
-        revenue_output = {}
-        BW_len = self.end_year - self.start_year + 1
-        # run the base calc first to get baseline results
-        lazy_values = []
-        for yr in range(self.start_year, self.end_year + 1):
-            lazy_values.append(
-                delayed(self._taxcalc_advance(base_calc, varlist, yr))
-            )
-        if client:
-            futures = client.compute(lazy_values, num_workers=num_workers)
-            results = client.gather(futures)
-        else:
-            results = compute(
-                *lazy_values,
-                scheduler=dask.multiprocessing.get,
-                num_workers=num_workers,
-            )
-        # add results to data and revenue outputs
-        revenue_output["Baseline"] = np.zeros(BW_len)
-        yr = self.start_year
-        # for i in np.arange(0, len(results), 2):
-        for i, res in enumerate(results):
-            self.base_data[yr] = res
-            combined = (res["combined"] * res["s006"]).sum()
-            revenue_output["Baseline"][yr - self.start_year] = combined
-            yr += 1
-        reform_list = list(self.stacked_reforms.keys())
-        # Loop over different provisions
-        for k, v in self.stacked_reforms.items():
-            if self.verbose:
-                print("Analyzing ", k)
-            revenue_output[k] = np.zeros(BW_len)
-            base_calc_copy, _ = self._make_calculators()
-            ref = policy.read_json_reform(v)
-            # update Policy object with additional provisions
-            policy.implement_reform(ref)
-            # update Calculator object with new Policy object
-            calc = tc.calculator.Calculator(policy=policy, records=records)
-            # loop over each year in budget window
-            for yr in np.arange(self.start_year, self.end_year + 1):
-                base_calc_copy.advance_to_year(yr)
-                calc.advance_to_year(yr)
-                # change income in accordance with corp income tax
-                # distributed across individual taxpayers
-                if self.corp_revenue is not None:
-                    calc = dist_corp(
-                        calc,
-                        self.corp_revenue,
-                        yr,
-                        self.start_year,
-                        self.ci_params,
-                    )
-                # makes calculations on microdata
-                _, reform = behresp.response(
-                    base_calc_copy, calc, self.params["behavior"], dump=True
-                )
-                # compute total revenue
-                revenue_output[k][yr - self.start_year] = (reform["s006"]* reform['combined']).sum()
-                # if we're on the last reform piece, save the data
-                if k == reform_list[-1]:
-                    self.reform_data[yr] = calc.dataframe(varlist)
-        df = pd.DataFrame.from_dict(
-            revenue_output,
-            orient="Index",
-            columns=np.arange(self.start_year, self.start_year + BW_len),
-        )
-        # Compute differences from one provision to another
-        rev_est_tbl = df.diff()
-        # Drop baseline revenue since reporting differences relative to baseline
-        rev_est_tbl.drop(labels="Baseline", inplace=True)
-
-        # Create totals across budget window
-        tot_col = f"{self.start_year}-{self.end_year}"
-        rev_est_tbl[tot_col] = rev_est_tbl[list(rev_est_tbl.columns)].sum(
-            axis=1
-        )
-        # Create totals across provisions
-        rev_est_tbl.loc["Total"] = rev_est_tbl.sum()
-
-        # save the table as an attribute of the TaxBrain object
-        setattr(self, "stacked_table", rev_est_tbl)
-
-    # ----- private methods -----
     def _taxcalc_advance(self, calc, varlist, year, reform=False):
         """
         This function advances the year used in Tax-Calculator, computes
@@ -546,7 +455,7 @@ class TaxBrain:
             if self.verbose:
                 print("Analyzing ", k)
             revenue_output[k] = np.zeros(BW_len)
-            base_calc_copy, _ = self._make_calculators()
+            base_calc_copy, _, _, _ = self._get_calculators(stacked=False)
             ref = policy.read_json_reform(v)
             # update Policy object with additional provisions
             policy.implement_reform(ref)
@@ -682,12 +591,12 @@ class TaxBrain:
 
         return params
 
-    def _make_calculators(self):
+    def _get_calculators(self, stacked=False):
         """
-        This function creates the baseline and reform calculators used when
-        the `run()` method is called
+        This method returns the base calculator and reform calculator
+        objects after the `run()` method is called.
         """
-        # Create two microsimulation calculators
+        base_calc = reform_calc = None
         # Baseline calculator
         records, gf_base = self._create_records_and_gfactors(
             tc.GrowFactors(), self.params["growdiff_baseline"]
@@ -698,49 +607,8 @@ class TaxBrain:
         base_calc = tc.Calculator(
             policy=policy, records=records, verbose=self.verbose
         )
-        self.base_records = records
-
-        # Reform calculator
-        records, gf_reform = self._create_records_and_gfactors(
-            tc.GrowFactors(self.reform_growfactors),
-            self.params["growdiff_response"],
-        )
-        policy = tc.Policy(gf_reform)
-        if self.params["base_policy"]:
-            update_policy(policy, self.params["base_policy"])
-        update_policy(policy, self.params["policy"])
-
-        # Initialize Calculator
-        reform_calc = tc.Calculator(
-            policy=policy, records=records, verbose=self.verbose
-        )
-        self.reform_records = records
-
-        # delete all unneeded variables
-        del records, gf_base, gf_reform, policy
-        return base_calc, reform_calc
-
-    # TODO: update these method to allow for different microdata as above
-    # but code becoming cumbersome, so should probably streamline in a single get calculator function
-    def _make_stacked_objects(self):
-        """
-        This method makes the base calculator and policy and records objects
-        for stacked reforms. The difference between this and the standard
-        _make_calculators method is that this method
-        only fully creates the baseline calculator. For the reform, it creates
-        policy and records objects and implements any growth assumptions
-        provided by the user.
-        """
-        # Create two microsimulation calculators
-        records, gf_base = self._create_records_and_gfactors(
-            tc.GrowFactors(), self.params["growdiff_baseline"]
-        )
-        policy = tc.Policy(gf_base)
-        if self.params["base_policy"]:
-            update_policy(policy, self.params["base_policy"])
-        base_calc = tc.Calculator(
-            policy=policy, records=records, verbose=self.verbose
-        )
+        if not stacked:
+            self.base_records = records
 
         # Reform calculator
         records, gf_reform = self._create_records_and_gfactors(
@@ -748,4 +616,16 @@ class TaxBrain:
             self.params["growdiff_response"],
         )
         reform_policy = tc.Policy(gf_reform)
-        return base_calc, reform_policy, records
+        if not stacked:
+            if self.params["base_policy"]:
+                update_policy(reform_policy, self.params["base_policy"])
+            update_policy(reform_policy, self.params["policy"])
+
+            # Initialize Calculator
+            reform_calc = tc.Calculator(
+                policy=reform_policy, records=records, verbose=self.verbose
+            )
+            self.reform_records = records
+        
+        del gf_base, gf_reform, policy
+        return base_calc, reform_calc, reform_policy, records

@@ -17,6 +17,12 @@ requirements:
     - curl
     - openpyxl
     - behresp
+    - aiohttp
+    - dask
+    - matplotlib
+    - pypandoc
+    - requests
+    - tabulate
 
   run:
     - "python>=3.10, <3.13"
