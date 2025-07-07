@@ -139,7 +139,7 @@ def test_stacked_run_corporate():
 
 
 def test_weighted_totals(tb_static_run):
-    table = tb_static.weighted_totals("combined")
+    table = tb_static_run.weighted_totals("combined")
     assert isinstance(table, pd.DataFrame)
     # table.to_csv("expected_weighted_table.csv")
     cur_path = os.path.dirname(os.path.abspath(__file__))

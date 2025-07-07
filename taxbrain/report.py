@@ -1,5 +1,6 @@
 import shutil
 import pandas as pd
+import matplotlib.pyplot as plt
 import behresp
 import taxbrain
 import taxcalc as tc
@@ -107,7 +108,7 @@ def report(
 
         Parameters
         -----------
-        plot: Matplolib.pyplot plot object
+        plot: Matplotlib.pyplot plot object
             plot to export
         graph: str
             str to use in file name of plot to save
@@ -122,7 +123,8 @@ def report(
         # do not render correctly in the PDF document
         filename = f"{graph}_graph.png"
         full_filename = Path(output_path, filename)
-        plot.savefig(full_filename, dpi=1200, bbox_inches="tight")
+        plot.plot()
+        plt.savefig(full_filename, dpi=1200, bbox_inches="tight")
 
         return str(full_filename)
 
@@ -282,20 +284,14 @@ def report(
     # create graphs
     if verbose:
         print("Creating graphs")
-    dist_graph = taxbrain.distribution_plot(
-        tb,
-        tb.start_year,
-        (5, 4),
-        f"Fig. 2: Percentage Change in After-Tax Income - {tb.start_year}",
+    dist_graph = tb.distribution_table(
+        tb.start_year, "weighted_deciles", "expanded_income", "base"
     )
     text_args["distribution_graph"] = export_plot(dist_graph, "dist")
 
     # differences graph
-    diff_graph = taxbrain.differences_plot(
-        tb,
-        "combined",
-        (6, 3),
-        title="Fig. 1: Change in Aggregate Combined Tax Liability",
+    diff_graph = tb.differences_table(
+        tb.start_year, "weighted_deciles", "combined"
     )
     text_args["agg_graph"] = export_plot(diff_graph, "difference")
 

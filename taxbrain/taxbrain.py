@@ -16,7 +16,7 @@ from taxbrain.corporate_incidence import distribute as dist_corp
 from typing import Union
 from paramtools import ValidationError
 from pathlib import Path
-from taxbrain.tables import weighted_totals, multi_var_table, distribution_table, differences_table
+import taxbrain.tables as tb_tables
 from taxbrain.typing import RunType
 
 
@@ -261,14 +261,17 @@ class TaxBrain:
     def weighted_totals(
         self, var: str, include_total: bool = False, xtot: int = 0
     ) -> pd.DataFrame:
-        return weighted_totals(
-            var, self.base_records, self.reform_records, self.base_data, self.reform_data, self.start_year, self.end_year, self.base_calc, self.reform_calc, include_total, xtot
+        return tb_tables.weighted_totals(
+            var, self.base_records, self.reform_records, self.base_data,
+            self.reform_data, self.start_year, self.end_year, self.base_calc,
+            self.reform_calc, include_total, xtot
         )
 
     def multi_var_table(
         self, varlist: list, calc: str, include_total: bool = False
     ) -> pd.DataFrame:
-        return multi_var_table(varlist, calc, self.start_year, self.end_year, self.base_data, self.reform_data, include_total)
+        return tb_tables.multi_var_table(varlist, calc, self.start_year,
+            self.end_year, self.base_data, self.reform_data, include_total)
 
     def distribution_table(
         self,
@@ -278,8 +281,9 @@ class TaxBrain:
         calc: str,
         pop_quantiles: bool = False,
     ) -> pd.DataFrame:
-        return distribution_table(
-            year, groupby, income_measure, calc, self.base_data, self.reform_data, pop_quantiles
+        return tb_tables.distribution_table(
+            year, groupby, income_measure, calc, self.base_data,
+            self.reform_data, pop_quantiles
         )
 
     def differences_table(
@@ -289,8 +293,9 @@ class TaxBrain:
         tax_to_diff: str,
         pop_quantiles: bool = False,
     ) -> pd.DataFrame:
-        return differences_table(
-            year, groupby, tax_to_diff, self.base_data, self.reform_data, pop_quantiles
+        return tb_tables.differences_table(
+            year, groupby, tax_to_diff, self.base_data,
+            self.reform_data, pop_quantiles
         )
 
     # ----- private methods -----
