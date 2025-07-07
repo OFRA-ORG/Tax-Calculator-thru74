@@ -12,8 +12,8 @@ def reform_json_str():
     reform = """
         {
             "policy": {
-                "SS_thd50": {"2019": [50000, 100000, 50000, 50000, 50000]},
-                "SS_thd85": {"2019": [50000, 100000, 50000, 50000, 50000]},
+                "SS_thd1": {"2019": [50000, 100000, 50000, 50000, 50000]},
+                "SS_thd2": {"2019": [50000, 100000, 50000, 50000, 50000]},
                 "SS_Earnings_thd": {"2019": 400000},
                 "FICA_ss_trt_employee": {"2020": 0.0625,
                                 "2021": 0.063,
@@ -43,11 +43,16 @@ def assump_json_str():
     return assump
 
 
-@pytest.fixture(
-    scope="session",
-)
+@pytest.fixture(scope="session")
 def tb_static(reform_json_str):
     return TaxBrain(2018, 2019, microdata="CPS", reform=reform_json_str)
+
+
+@pytest.fixture(scope="session")
+def tb_static_run(reform_json_str):
+    tb = TaxBrain(2018, 2019, microdata="CPS", reform=reform_json_str)
+    tb.run()
+    return tb
 
 
 @pytest.fixture(scope="session")
@@ -60,6 +65,17 @@ def tb_dynamic(reform_json_str):
         behavior={"sub": 0.25},
     )
 
+@pytest.fixture(scope="session")
+def tb_dynamic_run(reform_json_str):
+    tb = TaxBrain(
+        2018,
+        2019,
+        microdata="CPS",
+        reform=reform_json_str,
+        behavior={"sub": 0.25},
+    )
+    tb.run()
+    return tb
 
 @pytest.fixture(scope="session")
 def empty_mods():

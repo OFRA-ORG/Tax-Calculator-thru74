@@ -138,7 +138,7 @@ def test_stacked_run_corporate():
     assert isinstance(tb.stacked_table, pd.DataFrame)
 
 
-def test_weighted_totals(tb_static):
+def test_weighted_totals(tb_static_run):
     table = tb_static.weighted_totals("combined")
     assert isinstance(table, pd.DataFrame)
     # table.to_csv("expected_weighted_table.csv")
@@ -175,23 +175,22 @@ def test_multi_var_table(tb_dynamic):
     assert isinstance(table, pd.DataFrame)
 
 
-def test_differences_table(tb_dynamic):
-    table = tb_dynamic.differences_table(2018, "weighted_deciles", "combined")
+def test_differences_table(tb_dynamic_run):
+    table = tb_dynamic_run.differences_table(2018, "weighted_deciles", "combined")
     assert isinstance(table, pd.DataFrame)
 
 
-def test_distribution_table(tb_static):
-    tb_static.run()
-    table = tb_static.distribution_table(
+def test_distribution_table(tb_static_run):
+    table = tb_static_run.distribution_table(
         2019, "weighted_deciles", "expanded_income_baseline", "reform"
     )
     assert isinstance(table, pd.DataFrame)
-    table = tb_static.distribution_table(
+    table = tb_static_run.distribution_table(
         2019, "weighted_deciles", "expanded_income", "base"
     )
     assert isinstance(table, pd.DataFrame)
     with pytest.raises(ValueError):
-        tb_static.distribution_table(
+        tb_static_run.distribution_table(
             2018, "weighted_deciles", "expanded_income", "nonreform"
         )
 

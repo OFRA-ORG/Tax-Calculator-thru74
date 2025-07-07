@@ -17,6 +17,7 @@ from typing import Union
 from paramtools import ValidationError
 from pathlib import Path
 from taxbrain.tables import weighted_totals, multi_var_table, distribution_table, differences_table
+from taxbrain.typing import RunType
 
 
 class TaxBrain:
@@ -41,7 +42,7 @@ class TaxBrain:
         locale: str = None,
         reform: Union[str, dict] = None,
         reform_growfactors: str = None,
-        behavior: dict = None,
+        behavior: dict = {},
         assump=None,
         base_policy: Union[str, dict] = None,
         corp_revenue: Union[dict, list, np.array] = None,
@@ -158,23 +159,33 @@ class TaxBrain:
         ----------
         varlist: list
             variables from the microdata to be stored in each year
+        client: dask.distributed.Client, optional
+            A Dask client to use for parallel processing. If not provided,
+            the function will use Dask's default scheduler.
+        num_workers: int, optional
+            The number of workers to use for parallel processing.
 
         Returns
         -------
         None
         """
+        if self.has_run:
+            raise RuntimeError(
+                "TaxBrain has already been run. "
+                "Please create a new TaxBrain object to run again."
+            )
         if not isinstance(varlist, list):
             msg = f"'varlist' is of type {type(varlist)}. Must be a list."
             raise TypeError(msg)
 
         if self.stacked:
-            run_type = "stacked"
+            run_type = RunType.STACKED
         elif self.params["behavior"]:
-            run_type = "dynamic"
+            run_type = RunType.DYNAMIC
         else:
-            run_type = "static"
+            run_type = RunType.STATIC
         if self.verbose:
-            print(f"Running {run_type} simulations for "
+            print(f"Running {run_type.value} simulations for "
                   f"{self.start_year}-{self.end_year}")
 
         base_calc, reform_calc, policy, records = self._get_calculators(
@@ -185,7 +196,7 @@ class TaxBrain:
             varlist.append("s006")
         lazy_values = []
         for yr in range(self.start_year, self.end_year + 1):
-            if run_type == "dynamic":
+            if run_type == RunType.DYNAMIC:
                 lazy_values.append(
                     delayed(
                         self._behresp_advance(
@@ -193,11 +204,11 @@ class TaxBrain:
                         )
                     )
                 )
-            elif run_type == "stacked":
+            elif run_type == RunType.STACKED:
                 lazy_values.append(
                     delayed(self._taxcalc_advance(base_calc, varlist, yr))
                 )
-            elif run_type == "static":
+            elif run_type == RunType.STATIC:
                 lazy_values.extend(
                     [
                         delayed(self._taxcalc_advance(base_calc, varlist, yr)),
@@ -210,8 +221,8 @@ class TaxBrain:
                 )
             else:
                 raise ValueError(
-                    f"Unknown run_type '{run_type}'. "
-                    f"Must be one of 'static', 'dynamic', or 'stacked'."
+                    f"Unknown run_type '{run_type.value}'. "
+                    f"Must be one of {[rt.value for rt in RunType]}."
                 )
 
         if client:
@@ -224,25 +235,25 @@ class TaxBrain:
                 num_workers=num_workers,
             )
 
-        if run_type == "dynamic":
+        if run_type == RunType.DYNAMIC:
             # add results to base and reform data
             for i in range(len(results)):
                 yr = self.start_year + i
                 self.base_data[yr] = results[i][0]
                 self.reform_data[yr] = results[i][1]
-        elif run_type == "static":
+        elif run_type == RunType.STATIC:
             # add results to base and reform data
             yr = self.start_year
             for i in np.arange(0, len(results), 2):
                 self.base_data[yr] = results[i]
                 self.reform_data[yr] = results[i + 1]
                 yr += 1
-        elif run_type == "stacked":
+        elif run_type == RunType.STACKED:
             self._set_stacked_table(varlist, policy, records, results)
         else:
             raise ValueError(
-                f"Unknown run_type '{run_type}'. "
-                f"Must be one of 'static', 'dynamic', or 'stacked'."
+                f"Unknown run_type '{run_type.value}'. "
+                f"Must be one of {[rt.value for rt in RunType]}."
             )
 
         self.has_run = True
@@ -306,18 +317,15 @@ class TaxBrain:
                 weights=tc.Records.PUF_WEIGHTS_FILENAME,
             )
         elif self.microdata == "TMD":
-            if not self.subnational:
-                records = tc.Records.tmd_constructor(
-                    data_path=Path(__file__).parent.parent / "taxcalc" / "tmd.csv",
-                    weights_path=Path(__file__).parent.parent / "taxcalc" / "tmd_weights.csv.gz",
-                    growfactors=Path(__file__).parent.parent / "taxcalc" / "tmd_growfactors.csv",
-                )
-            else:
-                records = tc.Records.tmd_constructor(
-                    data_path=Path(__file__).parent.parent / "taxcalc" / "tmd.csv",
-                    weights_path=Path(__file__).parent.parent / "subnational" / "cds" / f"{self.locale}_tmd_weights.csv.gz",
-                    growfactors=Path(__file__).parent.parent / "taxcalc" / "tmd_growfactors.csv",
-                )
+            records = tc.Records.tmd_constructor(
+                data_path=Path(__file__).parent.parent / "taxcalc" / "tmd.csv",
+                weights_path=(
+                    Path(__file__).parent.parent / "taxcalc" / "tmd_weights.csv.gz"
+                    if not self.subnational
+                    else Path(__file__).parent.parent / "subnational" / "cds" / f"{self.locale}_tmd_weights.csv.gz"
+                ),
+                growfactors=Path(__file__).parent.parent / "taxcalc" / "tmd_growfactors.csv",
+            )
         elif isinstance(self.microdata, dict):
             records = tc.Records(
                 self.microdata["data"],

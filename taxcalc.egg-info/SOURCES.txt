@@ -96,11 +96,13 @@ docs/usage/data.md
 docs/usage/overview.md
 docs/usage/starting.md
 docs/usage/tcja_after_2025.md
+taxbrain/__init__.py
 taxbrain/cli.py
 taxbrain/conftest.py
 taxbrain/corporate_incidence.py
 taxbrain/report.py
 taxbrain/report_utils.py
+taxbrain/tables.py
 taxbrain/taxbrain.py
 taxbrain/typing.py
 taxbrain/utils.py

@@ -1,5 +1,5 @@
 import shutil
-from taxbrain import cli_core
+from taxbrain.cli import cli_core
 from pathlib import Path
 
 
