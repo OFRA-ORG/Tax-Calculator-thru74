@@ -33,7 +33,6 @@ def report(
     description=None,
     outdir=None,
     author="",
-    css=None,
     verbose=False,
     clean=False,
 ):
@@ -55,8 +54,6 @@ def report(
         Output directory
     author: str
         Person or persons to be listed as the author of the report
-    css: str
-        Path to a CSS file used to format the final report
     verbose: bool
         boolean indicating whether or not to write progress as report is
         created

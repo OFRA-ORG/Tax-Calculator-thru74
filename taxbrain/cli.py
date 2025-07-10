@@ -67,8 +67,6 @@ def cli_core(
         last year for analysis
     data: str or Pandas DataFrame
         path to or DataFrame with data for Tax-Calculator
-    usecps: bool
-        whether to use the CPS or (if False) the PUF-based file
     reform: dict
         parameter changes for reform run in Tax-Calculator
     behavior: dict
@@ -80,6 +78,8 @@ def cli_core(
         policy
     verbose: bool
         indicator for printing of output
+    author: str
+        name of the author of the report
 
     Returns
     -------
@@ -224,7 +224,6 @@ def cli_main():
         args.startyear,
         args.endyear,
         args.data,
-        args.usecps,
         args.reform,
         args.behavior,
         args.assump,
@@ -232,6 +231,7 @@ def cli_main():
         args.outdir,
         args.name,
         args.report,
+        args.author,
     )
 
 

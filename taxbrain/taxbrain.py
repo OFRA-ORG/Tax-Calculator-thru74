@@ -13,15 +13,50 @@ import dask.multiprocessing
 from collections import defaultdict
 from taxbrain.utils import weighted_sum, update_policy
 from taxbrain.corporate_incidence import distribute as dist_corp
-from typing import Union
+from typing import Union, Dict, List, Optional, Any
+from dataclasses import dataclass, field
 from paramtools import ValidationError
 from pathlib import Path
 import taxbrain.tables as tb_tables
 from taxbrain.typing import RunType
 
 
-class TaxBrain:
+class TaxBrainValidator:
+    """
+    Validator for TaxBrain constructor arguments.
+    """
 
+    @staticmethod
+    def validate_inputs(
+        start_year, end_year, corp_revenue, first_budget_year, last_budget_year
+    ):
+        """
+        Validate user-provided inputs for TaxBrain.
+        """
+        # validate years
+        assert isinstance(start_year, int) & isinstance(
+            end_year, int
+        ), "Start and end years must be integers"
+        assert start_year <= end_year, (
+            f"Specified end year, {end_year}, is before specified start year, "
+            f"{start_year}."
+        )
+        assert first_budget_year <= start_year, (
+            f"Specified start_year, {start_year}, comes before first known "
+            f"budget year, {first_budget_year}."
+        )
+        assert end_year <= last_budget_year, (
+            f"Specified end_year, {end_year}, comes after last known "
+            f"budget year, {last_budget_year}."
+        )
+        # validate corporate revenue
+        if corp_revenue:
+            assert (
+                len(corp_revenue) == end_year - start_year + 1
+            ), "Corporate revenue is not given for each budget year"
+
+
+class TaxBrain:
     FIRST_BUDGET_YEAR = tc.Policy.JSON_START_YEAR
     LAST_BUDGET_YEAR = tc.Policy.LAST_BUDGET_YEAR
     # Default list of variables saved for each year
@@ -38,17 +73,17 @@ class TaxBrain:
         start_year: int,
         end_year: int = LAST_BUDGET_YEAR,
         microdata: Union[str, dict] = "CPS",
-        subnational=False,
+        subnational: bool = False,
         locale: str = None,
         reform: Union[str, dict] = None,
         reform_growfactors: str = None,
         behavior: dict = {},
-        assump=None,
-        base_policy: Union[str, dict] = None,
-        corp_revenue: Union[dict, list, np.array] = None,
-        corp_incidence_assumptions: dict = None,
-        verbose=False,
-        stacked=False,
+        assump: Union[str, dict, None] = None,
+        base_policy: Union[str, dict, None] = None,
+        corp_revenue: Union[dict, list, np.array, None] = None,
+        corp_incidence_assumptions: Optional[dict] = None,
+        verbose: bool = False,
+        stacked: bool = False,
     ):
         """
         Constructor for the TaxBrain class
@@ -103,25 +138,13 @@ class TaxBrain:
         -------
         None
         """
-        assert isinstance(start_year, int) & isinstance(
-            end_year, int
-        ), "Start and end years must be integers"
-        assert start_year <= end_year, (
-            f"Specified end year, {end_year}, is before specified start year, "
-            f"{start_year}."
+        TaxBrainValidator.validate_inputs(
+            start_year,
+            end_year,
+            corp_revenue,
+            TaxBrain.FIRST_BUDGET_YEAR,
+            TaxBrain.LAST_BUDGET_YEAR,
         )
-        assert TaxBrain.FIRST_BUDGET_YEAR <= start_year, (
-            f"Specified start_year, {start_year}, comes before first known "
-            f"budget year, {TaxBrain.FIRST_BUDGET_YEAR}."
-        )
-        assert end_year <= TaxBrain.LAST_BUDGET_YEAR, (
-            f"Specified end_year, {end_year}, comes after last known "
-            f"budget year, {TaxBrain.LAST_BUDGET_YEAR}."
-        )
-        if corp_revenue:
-            assert (
-                len(corp_revenue) == end_year - start_year + 1
-            ), f"Corporate revenue is not given for each budget year"
         self.microdata = microdata
         self.subnational = subnational
         self.locale = locale
@@ -298,22 +321,42 @@ class TaxBrain:
             self.reform_data, pop_quantiles
         )
 
+
     # ----- private methods -----
-    def _create_records_and_gfactors(self, gfactors_initial, growdiff_params):
+    def _distribute_corporate_revenue(self, calc, year):
         """
-        Create a Tax-Calculator Records object and returns the Records object
-        and the GrowFactors object used to create it.
+        Distributes corporate revenue to the calculator if corp_revenue is
+        available.
         """
+        if self.corp_revenue is not None:
+            calc = dist_corp(
+                calc,
+                self.corp_revenue,
+                year,
+                self.start_year,
+                self.ci_params,
+            )
+        return calc
+
+    def _create_gfactors(self, gfactors_initial, growdiff_params=None):
+        """
+        Return GrowFactors object based on the initial GrowFactors.
+        """
+        gfactors = gfactors_initial
         if isinstance(self.microdata, dict) and self.microdata.get("growfactors"):
             gfactors = tc.GrowFactors(self.microdata["growfactors"])
-        else:
-            gfactors = gfactors_initial
 
         if growdiff_params:
             gd = tc.GrowDiff()
             gd.update_growdiff(growdiff_params)
             gd.apply_to(gfactors)
+        
+        return gfactors
 
+    def _create_records(self, gfactors):
+        """
+        Create a Tax-Calculator Records object and returns the Records object.
+        """
         if self.microdata == "CPS":
             records = tc.Records.cps_constructor(data=None, gfactors=gfactors)
         elif self.microdata == "PUF":
@@ -325,11 +368,18 @@ class TaxBrain:
             records = tc.Records.tmd_constructor(
                 data_path=Path(__file__).parent.parent / "taxcalc" / "tmd.csv",
                 weights_path=(
-                    Path(__file__).parent.parent / "taxcalc" / "tmd_weights.csv.gz"
+                    Path(__file__).parent.parent
+                    / "taxcalc"
+                    / "tmd_weights.csv.gz"
                     if not self.subnational
-                    else Path(__file__).parent.parent / "subnational" / "cds" / f"{self.locale}_tmd_weights.csv.gz"
+                    else Path(__file__).parent.parent
+                    / "subnational"
+                    / "cds"
+                    / f"{self.locale}_tmd_weights.csv.gz"
                 ),
-                growfactors=Path(__file__).parent.parent / "taxcalc" / "tmd_growfactors.csv",
+                growfactors=Path(__file__).parent.parent
+                / "taxcalc"
+                / "tmd_growfactors.csv",
             )
         elif isinstance(self.microdata, dict):
             records = tc.Records(
@@ -342,7 +392,8 @@ class TaxBrain:
             raise ValueError(
                 "microdata must be 'CPS', 'PUF', 'TMD', or a dictionary"
             )
-        return records, gfactors
+        
+        return records
 
     def _taxcalc_advance(self, calc, varlist, year, reform=False):
         """
@@ -359,15 +410,8 @@ class TaxBrain:
                 rates and other information computed in TC
         """
         calc.advance_to_year(year)
-        if self.corp_revenue is not None:
-            if reform:
-                calc = dist_corp(
-                    calc,
-                    self.corp_revenue,
-                    year,
-                    self.start_year,
-                    self.ci_params,
-                )
+        if reform:
+            calc = self._distribute_corporate_revenue(calc, year)
         calc.calc_all()
         df = calc.dataframe(varlist)
         if reform:
@@ -390,14 +434,7 @@ class TaxBrain:
         """
         base_calc.advance_to_year(year)
         reform_calc.advance_to_year(year)
-        if self.corp_revenue is not None:
-            reform_calc = dist_corp(
-                reform_calc,
-                self.corp_revenue,
-                year,
-                self.start_year,
-                self.ci_params,
-            )
+        reform_calc = self._distribute_corporate_revenue(reform_calc, year)
         base, reform = behresp.response(
             base_calc, reform_calc, self.params["behavior"], dump=True
         )
@@ -444,20 +481,15 @@ class TaxBrain:
                 calc.advance_to_year(yr)
                 # change income in accordance with corp income tax
                 # distributed across individual taxpayers
-                if self.corp_revenue is not None:
-                    calc = dist_corp(
-                        calc,
-                        self.corp_revenue,
-                        yr,
-                        self.start_year,
-                        self.ci_params,
-                    )
+                calc = self._distribute_corporate_revenue(calc, yr)
                 # makes calculations on microdata
                 _, reform = behresp.response(
                     base_calc_copy, calc, self.params["behavior"], dump=True
                 )
                 # compute total revenue
-                revenue_output[k][yr - self.start_year] = (reform["s006"]* reform['combined']).sum()
+                revenue_output[k][yr - self.start_year] = (
+                    reform["s006"] * reform["combined"]
+                ).sum()
                 # if we're on the last reform piece, save the data
                 if k == reform_list[-1]:
                     self.reform_data[yr] = calc.dataframe(varlist)
@@ -575,9 +607,10 @@ class TaxBrain:
         """
         base_calc = reform_calc = None
         # Baseline calculator
-        records, gf_base = self._create_records_and_gfactors(
+        gf_base = self._create_gfactors(
             tc.GrowFactors(), self.params["growdiff_baseline"]
         )
+        records = self._create_records(gf_base)
         policy = tc.Policy(gf_base)
         if self.params["base_policy"]:
             update_policy(policy, self.params["base_policy"])
@@ -588,10 +621,11 @@ class TaxBrain:
             self.base_records = records
 
         # Reform calculator
-        records, gf_reform = self._create_records_and_gfactors(
+        gf_reform = self._create_gfactors(
             tc.GrowFactors(self.reform_growfactors),
             self.params["growdiff_response"],
         )
+        records = self._create_records(gf_reform)
         reform_policy = tc.Policy(gf_reform)
         if not stacked:
             if self.params["base_policy"]:
@@ -603,6 +637,5 @@ class TaxBrain:
                 policy=reform_policy, records=records, verbose=self.verbose
             )
             self.reform_records = records
-        
-        del gf_base, gf_reform, policy
+
         return base_calc, reform_calc, reform_policy, records

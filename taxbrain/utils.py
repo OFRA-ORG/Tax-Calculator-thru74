@@ -244,7 +244,7 @@ def differences_plot(
     ax.set_axisbelow(True)
     ax.bar(
         plot_data.index,
-        plot_data["combined"],
+        plot_data[tax_var],
         alpha=0.55,
         color=plot_data["color"],
     )
