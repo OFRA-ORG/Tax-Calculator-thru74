@@ -38,6 +38,7 @@ TCJA_PARAMETERS = {
     # category 2 ...
     "CTC_c": {"indexed": False, "category": 2},
     "ACTC_c": {"indexed": True, "category": 2},
+    "ACTC_c-indexed": {"indexed": False, "category": 2},
     "ODC_c": {"indexed": False, "category": 2},
     "CTC_ps": {"indexed": False, "category": 2},
     "ACTC_Income_thd": {"indexed": False, "category": 2},
@@ -49,7 +50,7 @@ TCJA_PARAMETERS = {
     "STD": {"indexed": True, "category": 4},
     # category 5 ...
     "ID_AllTaxes_c": {"indexed": False, "category": 5},
-    "ID_Charity_crt_cash": {"indexed": False, "category": 5},
+    "ID_Charity_crt_all": {"indexed": False, "category": 5},
     "ID_Casualty_hc": {"indexed": False, "category": 5},
     "ID_Miscellaneous_hc": {"indexed": False, "category": 5},
     "ID_ps": {"indexed": True, "category": 5},
@@ -74,7 +75,7 @@ def main():
     """
     High-level script logic.
     """
-    # pylint: disable=too-many-statements
+    # pylint: disable=too-many-statements,too-many-branches
 
     # identify last parameter name in TCJA_PARAMETERS
     last_pname = list(TCJA_PARAMETERS.keys())[-1]
@@ -103,6 +104,13 @@ def main():
     for pname, pinfo in TCJA_PARAMETERS.items():
         if TCJA_CATEGORY and pinfo['category'] != TCJA_CATEGORY:
             continue  # skip this parameter
+        if pname == 'ACTC_c-indexed':
+            year = 2026
+            sys.stdout.write(f'    "{pname}": ')
+            sys.stdout.write(f'{left_brace}"{year}": ')
+            sys.stdout.write('true')
+            sys.stdout.write(f'{right_brace}{trailing_comma}\n')
+            continue  # to top of the for pname, pinfo loop
         if pname == 'ALD_BusinessLosses_c':
             ifactor = ifactor28
             year = 2029
