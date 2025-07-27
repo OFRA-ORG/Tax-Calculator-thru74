@@ -1,0 +1,16 @@
+To generate database files using local weights, you must have the state- or CD-level weights file in the same folder. Then specify the area characters in the TMD_AREA environmental argument. Use tmd.csv or another input data file.
+```
+TMD_AREA=nm python -m taxcalc.cli.tc tmd.csv 2026 --reform ../OBBBA/ext.json --dumpdb --dumpvars dump_vars.txt --runid 0
+```
+
+Run feature_analyzer.py to determine the most correlated and important features in terms of tax change.
+```
+python feature_analyzer.py
+```
+
+Run similarity_analyzer.py to determine the average change in taxes for the 10 most similar records.
+```
+python similarity_analyzer.py
+```
+
+Run aggregate_analyzer.py to analyze aggregates using the area weight files.
