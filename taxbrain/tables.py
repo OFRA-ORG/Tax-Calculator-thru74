@@ -7,7 +7,9 @@ from taxcalc.utils import (
 )
 
 def weighted_totals(
-    var: str, base_records, reform_records, base_data, reform_data, start_year, end_year, base_calc, reform_calc, include_total: bool = False, xtot: int = 0
+    var: str, base_records, reform_records, base_data, reform_data, start_year,
+    end_year, base_calc, reform_calc, include_total: bool = False,
+    xtot: int = 0
 ) -> pd.DataFrame:
     """
     Create a pandas DataFrame that shows the weighted sum or a specified
@@ -22,7 +24,11 @@ def weighted_totals(
         If true the returned DataFrame will include a "total" columns
 
     Returns
-    -------"""
+    -------
+    Pandas DataFrame
+        A Pandas DataFrame with rows for the baseline total,
+        reform total, and the difference between the two.
+    """
     base_totals = {}
     reform_totals = {}
     differences = {}
@@ -58,7 +64,8 @@ def weighted_totals(
     return table
 
 def multi_var_table(
-    varlist: list, calc: str, start_year: int, end_year: int, base_data: dict, reform_data: dict, include_total: bool = False
+    varlist: list, calc: str, start_year: int, end_year: int, base_data: dict,
+    reform_data: dict, include_total: bool = False
 ) -> pd.DataFrame:
     """
     Create a Pandas DataFrame with multiple variables from the

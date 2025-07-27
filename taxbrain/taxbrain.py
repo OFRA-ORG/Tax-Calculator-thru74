@@ -374,7 +374,6 @@ class TaxBrain:
                     if not self.subnational
                     else Path(__file__).parent.parent
                     / "subnational"
-                    / "cds"
                     / f"{self.locale}_tmd_weights.csv.gz"
                 ),
                 growfactors=Path(__file__).parent.parent
