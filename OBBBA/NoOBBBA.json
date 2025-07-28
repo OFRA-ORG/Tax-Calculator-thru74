@@ -23,6 +23,8 @@
     "II_brk5": {"2026": [553994, 553994, 276997, 553994, 553994]},
     "II_brk6": {"2026": [556254, 625786, 312893, 591020, 625786]},
     "II_brk7": {"2026": [9e+99, 9e+99, 9e+99, 9e+99, 9e+99]},
+    "PT_qbid_min_ded": {"2026": 0},
+    "PT_qbid_min_qbi": {"2026": 0},
     // TODO
     "PT_qbid_rt": {"2018": 0.2,
                    "2026": 0.0},
@@ -36,29 +38,33 @@
                                 "2026": 0.0},
     "PT_qbid_alt_property_rt": {"2018": 0.025,
                                 "2026": 0.0},
-    "STD": {"2018": [12000, 24000, 12000, 18000, 24000],
-            "2026": [7655, 15311, 7655, 11272, 15311]},
+    // DONE
+    "STD": {"2026": [8442, 16884, 8442, 12431, 16884]},
+    // TODO
     "II_em": {"2018": 0,
               "2026": 4883},
-    "ODC_c": {"2018": 500,
-              "2026": 0},
-    "CTC_c": {"2018": 2000,
-              "2026": 1000},
-    "CTC_ps": {"2018": [200000, 400000, 200000, 200000, 400000],
-               "2026": [75000, 110000, 55000, 75000, 75000]},
-    "ACTC_c": {"2018": 1400,
-               "2022": 1500,
-               "2025": 1600,
-               "2026": 1000},
-    "ACTC_Income_thd": {"2018": 2500,
-                        "2026": 3000},
-    // DONE: Indexed using CPI-U
+    // DONE
+    "ODC_c": {"2026": 0},
+    // CTC_ps and ACTC_c are not inflation-indexed, so could inflation-index
+    // to make the counter-factual more realistic.
+    "CTC_c": {"2025": 1000},
+    "CTC_ps": {"2025": [75000, 110000, 55000, 75000, 75000]},
+    "ACTC_c": {"2026": 1000},
+    "ACTC_Income_thd": {"2026": 3000},
+    // AMT_em is indexed using CPI-U
     "AMT_em": {"2018": [70300, 109400, 54700, 70300, 109400],
                "2026": [73429, 114267, 57134, 73429, 114267]},
     "AMT_em_ps": {"2018": [500000, 1000000, 500000, 500000, 1000000],
                   "2026": [163220, 217581, 108790, 163220, 217581]},
     "AMT_em_pe": {"2018": 718800,
                   "2026": 337325},
+    // New OBBBA parameters made non-functional
+    "AutoLoanInterestDed_c": {"2025": 0,
+                              "2029": 0},
+    "ALD_OvertimeIncome_hc": {"2025": 1.0,
+                              "2029": 1.0},
+    "ALD_TipIncome_hc": {"2025": 1.0,
+                         "2029": 1.0},
     // TODO
     "ALD_DomesticProduction_hc": {"2018": 1,
                                   "2026": 0},
@@ -84,13 +90,19 @@
                             "2026": 0},
     "ID_Medical_frt": {"2017": 0.075,
                        "2019": 0.075},
+    // DONE
+    "ID_reduction_salt_rate": {"2026": 0.0},
+    "ID_reduction_other_rate": {"2026": 0.0},
+    // TODO
     "parameter_indexing_CPI_offset": {"2017": 0.0},
-
-    // Apply parameters that are affected by the change in index rates
-    // even though they are not directly modified by TCJA.
     "II_em_ps": {"2018": [9e99, 9e99, 9e99, 9e99, 9e99]},
     "STD_Dep": {"2018": 1050, "2019": 1100, "2020": 1100, "2021": 1100, "2022": 1150},
-    "STD_Aged": {"2018": [1600, 1300, 1300, 1600, 1300]},
+    // DONE
+    // No additional senior deduction in pre-OBBBA
+    "SeniorDed_c": {"2026": [0, 0, 0, 0, 0]},
+    // Inflation-indexed (CPI-U) senior and blind deductions
+    "STD_Aged": {"2026": [2033, 1639, 1639, 2033, 1639]},
+    // TODO
     "CG_brk1": {"2018": [38600, 77200, 38600, 51700, 77200]},
     "CG_brk2": {"2018": [425800, 479000, 239500, 452400, 479000]},
     "AMT_CG_brk1": {"2018": [38600, 77200, 38600, 51700, 77200]},
