@@ -66,16 +66,17 @@
               "2026": [353620, 424344, 212172, 388982, 424344]},
     "ID_prt": {"2025": 0.0, "2026": 0.03},
     "ID_crt": {"2025": 1.0, "2026": 0.8},
-    "ID_Charity_crt_all": {"2025": 0.6, "2026": 0.5},
-    "ID_Casualty_hc": {"2025": 1.0, "2026": 0},
+    "ID_Charity_crt_all": {"2026": 0.5},
+    "ID_Charity_crt_noncash": {"2026": 0.3},
+    "ID_Charity_frt": {"2026": 0},
+    "ID_Casualty_hc": {"2026": 0},
     "ID_AllTaxes_c": {"2025": [10000, 10000, 5000, 10000, 10000],
                       "2026": [9e99, 9e99, 9e99, 9e99, 9e99]},
-    "ID_Miscellaneous_hc": {"2025": 1, "2026": 0},
-    // Change ID_Medical_frt to 0.1 if modeling non-OBBBA and non-TCJA counter-factual
+    "ID_Miscellaneous_hc": {"2026": 0},
     "ID_Medical_frt": {"2026": 0.075},
+    // TODO: Simplify ID_AllTaxes parameters by removing 2025 values if possible
     "ID_reduction_salt_rate": {"2025": 0.0, "2026": 0.0},
     "ID_reduction_other_rate": {"2025": 0.0, "2026": 0.0},
-    // TODO: Simplify ID_AllTaxes parameters by removing 2025 values if possible
     "ID_AllTaxes_c_ps": {"2025": [9e+99, 9e+99, 9e+99, 9e+99, 9e+99],
                        "2026": [9e+99, 9e+99, 9e+99, 9e+99, 9e+99]},
     "ID_AllTaxes_c_po_rate": {"2025": 0, "2026": 0},
@@ -84,5 +85,7 @@
     "II_em_ps": {"2025": [9e+99, 9e+99, 9e+99, 9e+99, 9e+99],
                  "2026": [353620, 424344, 212172, 388982, 424344]},
     "STD_Dep": {"2025": 1350, "2026": 1420},
+    "STD_allow_charity_ded_nonitemizers": {"2026": false},
+    "STD_charity_ded_nonitemizers_max": {"2026": [0, 0, 0, 0, 0]},
     "SeniorDed_c": {"2025": 0, "2026": 0}
 }

@@ -37,17 +37,21 @@ def analyze_similarity_cosine(db_path, household_id, top_n=10):
 
     # Select the features for similarity analysis based on feature importance
     features = [
-        "iitax_baseline",
-        "combined_baseline",
-        "c04470_baseline",
+        # Wages, salaries, and tips for filing unit net of pension contributions
         "e00200_baseline",
+        # Net long-term capital gains/losses
         "p23250_baseline",
-        "age_head_baseline",
+        # Age in years of taxpayer
+        "age_head",
+        # Sch C business net profit/loss for filing unit
         "e00900_baseline",
+        # Number of EIC qualifying children
         "EIC_baseline",
+        # Number of children who are Child-Tax-Credit eligible, one condition for which is being under age 17
         "n24_baseline",
+        # Filing (marital) status:
         "MARS",
-        "expanded_income",
+        # Total number of exemptions for filing unit
         "XTOT",
     ]
 
